@@ -5,8 +5,8 @@
 - [Overview](#overview)
 - [Key Features/Functionalities/Capabilities](#key-featuresfunctionalitiescapabilities)
 - [Tech Stack](#tech-stack)
-- [Prerequisite Software and Tools](#prerequisite-software-and-tools)
 - [Project Structure and Folder/Files Description](#project-structure-and-folderfiles-description)
+  - [Project Structure] (#project-structure)
 - [Setup and Installation](#setup-and-installation)
   - [Prerequisites](#prerequisites)
   - [Clone the repository](#clone-the-repository)
@@ -60,7 +60,7 @@ These capabilities are designed to get teams running reliable Playwright test su
 
 Below is a concise description of the main files and folders in this repository. Use these locations when you want to modify the scaffold behavior, templates, or example projects.
 
-## Project Structure
+### Project Structure
 
 ```text
 playwright-test-framework-generator/
