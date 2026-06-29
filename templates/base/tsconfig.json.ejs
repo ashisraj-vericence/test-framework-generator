@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      <% if (['web', 'hybrid'].includes(preset)) { %>
+      "@pages": ["src/pages/index.ts"],
+      <% } %>
+      "@data": ["test-data/index.ts"],
+      "@utils": ["src/utils/index.ts"],
+      "@fixtures": ["src/fixtures/index.ts"],
+      "@configs": ["src/configs/index.ts"],
+    }
+  }
+}

@@ -1,0 +1,92 @@
+import { checkoutData } from '@data';
+import { Fixtures } from '@fixtures';
+import { CartPage, CheckoutPage, HomePage, InventoryPage, LoginPage } from '@pages';
+import type { Page } from '@playwright/test';
+<% if (framework === 'playwright-bdd') { %>
+import { test as baseTest, createBdd } from 'playwright-bdd';
+<% } else { %>
+import { test as baseTest } from '@playwright/test';
+<% } %>
+import { expect as baseExpect } from '@playwright/test';
+import { ARTIFACTS_DIR } from '@utils';
+import path from 'path';
+
+const COOKIES_DIR = path.join(ARTIFACTS_DIR, 'cookies');
+
+// ---- Auth mode switch (FORM | SESSION) ----
+type AuthMode = 'FORM' | 'SESSION';
+
+export const testBase = baseTest.extend<Fixtures>({
+  // Authenticated
+  page: async ({ browser }, use) => {
+    const AUTH_MODE = (process.env.AUTH_MODE?.toUpperCase() as AuthMode) || 'FORM';
+
+    // SESSION — reuse saved storageState (cookies, localStorage)
+    if (AUTH_MODE === 'SESSION') {
+      const storageStatePath = path.resolve(COOKIES_DIR, `${process.env.USER_NAME}_cookies.json`);
+      const context = await browser.newContext({ storageState: storageStatePath });
+      const page = await context.newPage();
+      await use(page);
+      await page.close();
+      await context.close();
+    }
+
+    // FORM (default) — regular fresh page
+    if (AUTH_MODE === 'FORM') {
+      const context = await browser.newContext();
+      const page = await context.newPage();
+      const loginPage = new LoginPage(page);
+      await loginPage.navigation.goToLoginPage();
+      await loginPage.login(process.env.USER_NAME!, process.env.USER_PASSWORD!);
+      await use(page);
+      await page.close();
+      await context.close();
+    }
+  },
+
+  // authedPage simply proxies to the `page` fixture so existing POs work
+  authedPage: async ({ page }, use) => {
+    await use(page);
+  },
+
+  // Page Objects built on the single authenticated page
+  homePage: async ({ authedPage }, use) => {
+    await use(new HomePage(authedPage));
+  },
+
+  inventoryPage: async ({ authedPage }, use) => {
+    await use(new InventoryPage(authedPage));
+  },
+
+  cartPage: async ({ authedPage }, use) => {
+    await use(new CartPage(authedPage));
+  },
+
+  checkoutPage: async ({ authedPage }, use) => {
+    await use(new CheckoutPage(authedPage));
+  },
+
+  /**
+   * Checkout test data fixture
+   * - Loads from ./data/checkout.ts (typed import)
+   * - Available as `{ checkoutData }` in all tests
+   */
+  checkoutData: async ({}, use) => {
+    await use(checkoutData);
+  },
+
+  // Page objects as fixtures
+  loginPage: async ({ page }: { page: Page }, use: (p: LoginPage) => Promise<void>) => {
+    const login = new LoginPage(page);
+    // Do not perform navigation or automatic login at fixture setup — tests can call these explicitly.
+    await use(login);
+  },
+});
+
+export const expect = baseExpect;
+<% if (framework === 'playwright-bdd') { %>
+export const { Given, When, Then } = createBdd(testBase);
+export const test = testBase;
+<% } else { %>
+export const test = testBase;
+<% } %>

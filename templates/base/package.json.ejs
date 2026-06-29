@@ -1,0 +1,29 @@
+{
+  "name": "<%= projectName %>",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    <% if (['api', 'hybrid'].includes(preset)) { %>
+    "start": "ts-node ./src/utils/server.ts",
+    <% } %>
+    <% const bddPrefix = (framework === 'playwright-bdd') ? 'npx bddgen && ' : ''; %>
+    "test:runner": "<%- bddPrefix %>tsx src/utils/test-runner.ts",
+    "test:runner:ui": "<%- bddPrefix %>tsx src/utils/test-runner.ts --ui",
+    "test:runner:headed": "<%- bddPrefix %>tsx src/utils/test-runner.ts --headed",
+    "test": "<%- bddPrefix %>playwright test",
+    "test:ui": "<%- bddPrefix %>playwright test --ui",
+    "test:headed": "<%- bddPrefix %>playwright test --headed",
+    "codegen": "playwright codegen",
+    "fmt": "prettier -w . --ignore-pattern .prettierignore",
+    "lint": "eslint . --fix --max-warnings 0 --no-cache",
+    <% if (framework === 'playwright-bdd') { %>
+    "lint:gherkin": "npx gherkin-lint  --config .gherkin-lintrc --format stylish features",
+    <% } %>
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run lint",
+    "logs:clean": "rimraf artifacts/logs"<% if (notifications === true) { %>,
+    "notify-report": "tsx src/tools/notifications/notifications.ts --env dev --email True --slack True",
+    "run-and-notify": "npm run test:runner:headed && npm run notify-report"
+    <% } %>
+  }
+}

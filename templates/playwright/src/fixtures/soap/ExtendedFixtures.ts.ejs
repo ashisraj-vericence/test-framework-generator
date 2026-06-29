@@ -1,0 +1,72 @@
+import { calculatorSoapData, countryInfoSoapData, numberConversionSoapData, calculatorSchema, capitalCitySchema, countryNameSchema, numberToWordsSchema, numberToDollarsSchema } from '@data';
+import { Fixtures } from '@fixtures';
+import type { TestInfo } from '@playwright/test';
+<% if (framework === 'playwright-bdd') { %>
+import { test as baseTest, createBdd } from 'playwright-bdd';
+<% } else { %>
+import { test as baseTest } from '@playwright/test';
+<% } %>
+import { expect as baseExpect } from '@playwright/test';
+import { SoapClient, type SoapOptions } from '@utils';
+
+export const testBase = baseTest.extend<Fixtures>({
+  // Allow tests to optionally provide SOAP client options via `test.use({ soapServiceOptions: { ... } })`
+  soapServiceOptions: async ({}, use: (opts: SoapOptions) => Promise<void>) => {
+    await use({});
+  },
+
+  // Provide SoapClient wrapper as a fixture that tests can use directly
+  soapService: async (
+    { soapServiceOptions }: { soapServiceOptions: SoapOptions },
+    use: (client: SoapClient) => Promise<void>,
+    testInfo: TestInfo,
+  ) => {
+    const wsdlURL = soapServiceOptions?.url || process.env.SOAP_WSDL_URL;
+    const options: SoapOptions = {
+      url: wsdlURL,
+      headers: soapServiceOptions?.headers,
+      soapAction: soapServiceOptions?.soapAction,
+      body: soapServiceOptions?.body,
+      responsePath: soapServiceOptions?.responsePath,
+      log: soapServiceOptions?.log,
+    };
+    const client = new SoapClient(options, testInfo);
+    await use(client);
+    await client.dispose();
+  },
+
+  /**
+  * SOAP test data fixture
+  * - Loads from ./data/soap/*.ts (typed import)
+  * - Available as `{ soapData }` in all tests
+  */
+  soapData: async ({}, use) => {
+    await use({
+      calculator: calculatorSoapData,
+      countryInfo: countryInfoSoapData,
+      numberConversion: numberConversionSoapData,
+    });
+  },
+
+  /**
+  * SOAP schemas fixture
+  * - Available as `{ soapSchemas }` in all tests
+  */
+  soapSchemas: async ({}, use) => {
+    await use({
+      calculatorSchema: calculatorSchema,
+      capitalCitySchema: capitalCitySchema,
+      countryNameSchema: countryNameSchema,
+      numberToWordsSchema: numberToWordsSchema,
+      numberToDollarsSchema: numberToDollarsSchema,
+    });
+  },
+});
+
+export const expect = baseExpect;
+<% if (framework === 'playwright-bdd') { %>
+export const { Given, When, Then } = createBdd(testBase);
+export const test = testBase;
+<% } else { %>
+export const test = testBase;
+<% } %>

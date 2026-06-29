@@ -1,0 +1,156 @@
+# <%= projectName %>
+
+Generated via **playwright-test-framework-generator**.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Key Features/Functionalities/Capabilities](#key-featuresfunctionalitiescapabilities)
+- [Tech Stack](#tech-stack)
+- [Prerequisite Software and Tools](#prerequisite-software-and-tools)
+- [Get Started](#get-started)
+- [Running Tests](#running-tests)
+- [Validating Syntax and Linting Rules](#validating-syntax-and-linting-rules)
+- [Project Structure and Folder/Files Description](#project-structure-and-folderfiles-description)
+
+## Overview
+
+This project is built using Playwright and TypeScript. It is designed to provide a robust, scalable, and maintainable solution for automating end-to-end UI testing for web applications. The framework includes features for test execution, reporting, and code quality enforcement, ensuring high-quality test automation.
+
+## Key Features/Functionalities/Capabilities
+
+![image](./framework_features.jpg)
+
+This framework is designed to accelerate the development and execution of UI tests, ensuring high test coverage and reliability for web applications.
+
+## Tech Stack
+
+- Typescript
+- Playwright
+- Allure Report
+- Monocart Report
+
+## Prerequisite Software and Tools
+
+- Node 20.X
+- install java/jdk for Allure Report (Set JAVA_HOME)
+- VS Code, or equivalent IDE
+- Git
+
+## Get Started
+
+### Packages installations
+
+```bash
+npm i
+npx playwright install --with-deps
+```
+
+## Running Tests
+
+```bash
+# Run all tests in headless mode
+`npm test` – run Playwright tests
+
+# Run all tests in headed mode
+`npm run test:headed`
+```
+
+## Validating Syntax and Linting Rules
+
+It is recommended to run Linting and syntax validation scripts locally before pushing changes to your branch in order to prevent broken code, or code that does not meet basic coding standards, making it into your remote branch.
+
+📝 Syntax, and linting errors, must be fixed before a feature branch is allowed to be merged with the main branch, i.e. `main`.
+
+### Syntax Validation
+
+```bash
+# Runs the syntax/type check
+`npm run check`
+```
+
+### Run Linting Rules
+
+```bash
+# Runs the linting validations rule
+`npm run lint`
+```
+
+## Project Structure and Folder/Files Description
+
+```text
+<%= projectName %>/
+│
+│── .github/
+│ # CI/CD workflows, PR templates, and repo-level automation configs
+│
+│── .husky/
+│ # Git hooks (pre-commit, commit-msg, pre-push)
+│
+│── .vscode/
+│ # Workspace settings & recommended extensions for consistent developer experience
+│
+│── docs/
+│ # Project documentation (coding standards, architecture, review guidelines)
+│
+│── artifacts/
+│ # Runtime-generated outputs (ignored in Git; safe for debugging & analysis)
+│ │── cookies/
+│ │ # Persisted session/auth cookies for reuse in tests
+│ │── reports/
+│ │ # Test execution reports (HTML, JSON, etc.)
+│ │── logs/
+│ │ # Execution logs for debugging and tracing
+│ │── screenshots/
+│ │ # Captured screenshots (failures or checkpoints)
+│ │── temp/
+│ │ # Files write and download during test execution
+│
+│── src/
+│ # Core reusable test framework code (no direct test specs)
+│ │── config/
+│ │ # Centralized framework-level configurations and constants
+│ │── environments/
+│ │ # Environment-specific configurations (dev, qa, staging, prod)
+│ │── fixtures/
+│ │ # Reusable test fixtures (page objects, API clients, setup contexts)
+│ │── pages/
+│ │ # Implements the Page Object Model (POM) for web pages
+│ │── utils/
+│ │ # Shared helpers, utilities, custom reporters, API/GraphQL/SOAP clients
+│
+│── tests/
+│ # Actual test specifications grouped by feature/module
+│
+│── test-data/
+│ # Externalized test data (JSON, CSV, static datasets for data-driven testing)
+│
+│── .editorconfig
+│ # Code style rules enforced across editors (indentation, spacing, encoding)
+│
+│── .gitignore
+│ # Defines files/folders excluded from version control
+│
+│── .prettierignore
+│ # Specifies files excluded from Prettier formatting
+│
+│── .prettierrc
+│ # Prettier configuration (formatting rules like quotes, semicolons, spacing)
+│
+│── README.md
+│ # Project overview, setup instructions, and usage documentation
+│
+│── eslint.config.mjs
+│ # ESLint configuration for code quality, linting, and best practices
+│
+│── package.json
+│ # Project metadata, scripts, dependencies, and tooling configuration
+│
+│── package-lock.json
+│ # Dependency lock file ensuring consistent installations across environments
+│
+│── playwright.config.ts
+│ # Playwright configuration (execution settings, browsers, reporters, retries)
+│
+└── tsconfig.json # TypeScript compiler configuration (paths, strictness, module settings)
+```

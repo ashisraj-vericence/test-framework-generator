@@ -1,0 +1,38 @@
+import type { ApiClient, ApiOptions, ApolloClient } from '@utils';
+import {
+  contactsData,
+  profilesData,
+  usersData,
+  userSchema,
+  usersListSchema,
+  profileSchema,
+  contactSchema,
+  contactsListSchema,
+  healthSchema,
+} from '@data';
+
+export type Fixtures = {
+  apiService: ApiClient;
+  apiServiceOptions: ApiOptions;
+  apolloClient: ApolloClient;
+  apolloClientOptions: {
+    uri?: string;
+    headers?: Record<string, string>;
+  };
+
+  // API test data
+  apiData: {
+    contacts: typeof contactsData;
+    users: typeof usersData;
+    profiles: typeof profilesData;
+  };
+  // API schemas
+  apiSchemas: {
+    userSchema: typeof userSchema;
+    usersListSchema: typeof usersListSchema;
+    profileSchema: typeof profileSchema;
+    contactSchema: typeof contactSchema;
+    contactsListSchema: typeof contactsListSchema;
+    healthSchema: typeof healthSchema;
+  };
+};

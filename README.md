@@ -1,0 +1,287 @@
+# test-framework-generator
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Key Features/Functionalities/Capabilities](#key-featuresfunctionalitiescapabilities)
+- [Tech Stack](#tech-stack)
+- [Prerequisite Software and Tools](#prerequisite-software-and-tools)
+- [Project Structure and Folder/Files Description](#project-structure-and-folderfiles-description)
+- [Setup and Installation](#setup-and-installation)
+  - [Prerequisites](#prerequisites)
+  - [Clone the repository](#clone-the-repository)
+  - [Build the CLI (local)](#build-the-cli-if-running-locally)
+  - [Use the CLI to scaffold a project](#use-the-cli-to-scaffold-a-project)
+  - [After scaffolding](#after-scaffolding)
+- [Testing Strategy](#testing-strategy)
+- [Developer workflows](#developer-workflows)
+- [Linters & Typechecking](#linters--typechecking)
+- [Husky & pre-commit hooks](#husky--pre-commit-hooks)
+- [Adding presets & templates](#adding-presets--templates)
+- [Debugging tips](#debugging-tips)
+- [Useful grep targets](#useful-grep-targets)
+
+## Overview
+
+A zero‑setup CLI to scaffold test repositories with batteries included: Package Manager Presets (npm and yarn), Language Presets(TS and JS), Framework Presets (Non-BDD and Playwright-BDD), POM, Custom Fixtures, API client (for REST & GraphQL), SOAP Client, Reporting Presets (HTML, Allure, Monocart, Custom TTA), CI Presets (GitHub and GitLab), Report Notifications Presets (Slack and Gmail), Husky hooks, and a Zephyr publish stub.
+
+## Key Features/Functionalities/Capabilities
+
+A compact set of features that this scaffold and CLI provide out of the box:
+
+- Zero‑setup CLI: scaffold a Playwright test repository with a single `init` command.
+- TypeScript and JavaScript presets: start tests in your preferred language.
+- Page Object Model (POM): pre-built `pages/` structure and example page classes.
+- Custom fixtures and extended fixtures: reusable test setup and teardown helpers.
+- Built-in API client: utilities to call and validate backend APIs from tests.
+- SOAP preset: example SOAP/XML API test scaffold including helpers and templates for SOAP requests and responses.
+- Multiple reporters: Allure integration plus a Monocart report output template.
+- CI templates: ready-to-use GitHub and GitLab CI workflow templates.
+- Notification hooks: built-in notification scripts for test results (Slack/Teams/email).
+- Husky git hooks: `pre-commit` and `commit-msg` hooks to enforce standards.
+- Environment and config templates: `env.example`, `playwright.config.ts`, and TS configs.
+- Linting & syntax checks: scripts and configs for consistent code quality.
+- Test runner helpers: scripts for smoke/sanity/regression categorization and parallel runs.
+- Report publishing stub: example integration for publishing results (e.g., Zephyr).
+- Extensible templates: `templates/` and `extras/` for adding custom bits during scaffolding.
+
+These capabilities are designed to get teams running reliable Playwright test suites fast, while still allowing easy customization and CI integration.
+
+## Tech Stack
+
+- Node.js (v20+): runtime for the CLI and scaffolded projects.
+- TypeScript: primary language for the CLI and templates.
+- EJS: templating engine used for rendering project files (`*.ejs` templates).
+- Playwright: end-to-end test runner and browser automation used in templates.
+- Vitest: unit/test runner used for internal tests and examples.
+- Package managers: Yarn and npm supported in generated projects.
+
+## Project Structure and Folder/Files Description
+
+Below is a concise description of the main files and folders in this repository. Use these locations when you want to modify the scaffold behavior, templates, or example projects.
+
+## Project Structure
+
+```text
+playwright-test-framework-generator/
+├── src/                          # Core implementation of the CLI
+│                                 # and scaffolding logic
+│   ├── index.ts                    # CLI entry point — parses arguments,
+│   │                               # configures options, and delegates
+│   │                               # to scaffold flow
+│   ├── files.ts                  # File-system helpers — create directories,
+│   │                               # copy/write files, and apply
+│   │                               # file-level transformations
+│   ├── prompts.ts                # Interactive prompts and validation
+│   │                               # used during initialization to
+│   │                               # collect project preferences
+│   ├── render.ts                 # Template rendering utilities
+│   │                               # (EJS/placeholder replacement)
+│   │                               # and variable injection helpers
+│   ├── scaffold.ts               # High-level scaffolding engine —
+│   │                               # applies templates, runs post-
+│   │                               # generation steps, and coordinates
+│   │                               # file creation
+├── templates/                    # Framework templates used to
+│                                   # generate starter projects
+│
+├── examples/                     # Example generated projects or
+│                                   # sample implementations
+│
+├── tests/                        # Unit/integration tests for
+│                                   # generator functionality
+│
+├── .editorconfig                 # Editor formatting consistency
+│                                   # (indentation, spacing, encoding)
+├── .gitignore                    # Files/folders excluded from Git
+├── .prettierignore               # Files excluded from formatting
+├── .prettierrc                   # Prettier formatting rules
+├── eslint.config.mjs             # ESLint configuration for
+│                                   # linting and code quality
+├── package.json                  # Project metadata, scripts,
+│                                   # dependencies, and CLI definition
+├── package-lock.json             # Locked dependency versions for
+│                                   # reproducible installs
+├── tsconfig.json                 # TypeScript compiler configuration
+├── README.md                     # Project overview, setup,
+│                                   # usage, and contribution guide
+└── LICENSE                       # Open-source license information
+```
+
+How to customize templates:
+
+- Edit or add files under `templates/` to change what the generator writes to a new project.
+- Use `<variable>.ejs` placeholders where you need dynamic values; `src/render.ts` handles replacement.
+- Add new template sets (e.g. `templates/my-custom-preset/`) and expose them via CLI options if you want custom presets.
+
+## Setup and Installation
+
+Follow these steps to get a local development environment and to use the CLI to scaffold a Playwright project.
+
+### Prerequisites
+
+- Node 20.x
+- Yarn 1.22.x (or npm 9+)
+- Java / JDK (for Allure reporting) — set `JAVA_HOME` if you plan to use Allure
+- Git
+
+### Clone the repository
+
+```sh
+git clone https://github.com/ashisraj-vericence/test-framework-generator.git
+cd test-framework-generator
+npm i
+or
+npm install
+```
+
+### Build the CLI (if running locally)
+
+```sh
+npm run build
+```
+
+### Use the CLI to scaffold a project
+
+Run the generator without installing globally using `npx` or by invoking the local `bin/cli.js`:
+
+Use `node ./bin/cli.js --help` or `npx playwright-test-framework-generator --help` for CLI options.
+
+#### Non-Interactive Mode (Recommended for Automation)
+
+**Purpose & Intention:**
+
+Non-interactive mode allows you to scaffold projects entirely via CLI flags, bypassing interactive prompts. This is ideal for automation, CI/CD pipelines, scripting, and reproducible setups. All required options (such as `--preset`, `--reporter`, `--ci`, etc.) are provided up front, ensuring consistent and hands-free project generation.
+
+**Usage Example:**
+
+```sh
+# Scaffold a hybrid preset project with Allure and GitHub CI, non-interactively
+npx playwright-test-framework-generator init pw-tests-hybrid --preset hybrid --reporter allure --ci github
+
+# Or use the -y flag to skip all prompts and use defaults/non-interactive mode
+npx playwright-test-framework-generator init pw-tests-hybrid -y --preset hybrid --reporter allure --ci github
+
+# Scaffold a SOAP preset project non-interactively
+npx playwright-test-framework-generator init my-soap-project --preset soap --ci github
+```
+
+**When to use non-interactive mode:**
+
+- Automating project creation in scripts or CI workflows
+- Ensuring consistent, repeatable scaffolds across teams
+- Avoiding manual input for batch or remote setups
+
+If you omit required flags, the CLI will fall back to interactive prompts to collect missing information.
+
+#### Interactive Mode
+
+If you run the CLI without specifying all required flags, it will prompt you for choices interactively. This is useful for exploring options or customizing a single project manually.
+
+**Usage Example:**
+
+```sh
+# Interactive mode (prompts for missing options)
+npx playwright-test-framework-generator init pw-tests-web
+```
+
+### After scaffolding:
+
+```sh
+cd pw-tests-hybrid
+npm install   # or yarn install
+npx playwright install --with-deps
+npm test
+```
+
+### Run Tests:
+
+Add/Update the environment related settings into given `my-tests2/src/environments/.env.dev` as default, to be able to successfully run tests and send test result notifications.
+
+Add other environment specific files and use them. e.g. `.env.qa`, `.env.uat`, `.env.staging`.
+
+```sh
+# Check variuos scripts to run in package.json.
+npm test
+
+# via Test Runner
+npm run run-and-notify
+```
+
+## Testing strategy
+
+- **Build-first:** tests execute the built CLI (`dist/index.js`). Run `npm run build` before running tests locally.
+- **Integration-style matrix:** many tests scaffold temporary projects under the OS temp directory (see `tests/more-matrix.spec.ts`). These exercise combinations of flags (`--pm`, `--reporter`, `--ci`, `--preset`, `--js`, `--no-husky`, `--zephyr`) to validate that templates, `package.json` wiring, and files are generated correctly.
+- **Unit tests for inputs:** `tests/prompts.spec.ts` covers `askQuestions` non-interactive mapping so flags map to the `Answers` shape predictably.
+- **Helpers:** use `tests/helpers.ts` to run the CLI, create temp dirs, and inspect generated files (`runCLI`, `makeTmpDir`, `readJSON`, `exists`). Follow the helpers when adding new tests.
+- **Fast iteration tips:** for faster unit tests, add isolated tests that mock `src/files.ts` or the filesystem instead of creating full scaffolds.
+- **Extending the matrix:** add cases to `tests/more-matrix.spec.ts` to cover new flags or presets. Keep each case compact to avoid long test times.
+
+Commands to run tests locally (recommended):
+
+```sh
+npm run build
+npx vitest --run
+```
+
+## Developer workflows
+
+A few recommended commands and workflows for developing the generator and iterating on templates.
+
+- **Build the CLI:** `npm run build` (outputs `dist/`). Run before invoking `node ./bin/cli.js`.
+- **Dev mode:** `npm run dev` for a TypeScript watcher; run the local CLI in another shell after compilation completes.
+- **Run the CLI locally:** `node ./bin/cli.js init my-tests --preset hybrid --reporter allure --ci github` or use `npx playwright-test-framework-generator init ...`.
+- **Run tests:** `npx vitest` or `npm test`. Prefer `npm run build` first for integration tests that exercise the built `dist/` output.
+
+## Linters & Typechecking
+
+The generator and generated projects include linting and typechecking configuration.
+
+- **Lint the generator:** `npm run lint` (uses `eslint.config.js`).
+- **Typecheck:** `npm run typecheck` or `npx tsc --noEmit` to validate TypeScript across the repo.
+- **Generated projects:** run `npm --prefix ./path/to/generated run lint` and `npm --prefix ./path/to/generated run typecheck` inside scaffolded projects.
+
+Keep lint and typecheck steps fast in pre-commit hooks by using `lint-staged` in generated projects where appropriate.
+
+## Husky & pre-commit hooks
+
+Husky templates are included under `templates/husky/` and a `husky/` folder in the repo — generated projects copy these hooks into the new project.
+
+- To enable hooks locally after cloning this repo or any generated project, run `npx husky install` (or `npm run prepare` if present).
+- Typical pre-commit tasks: `npm run lint`, optional `npm run typecheck`, and lightweight tests. Keep them fast; prefer staged-only checks.
+
+## Adding presets & templates
+
+To add or change presets and templates:
+
+- Add new files under `templates/` or `templates/extras/presets/<your-preset>/` for new preset packs (see `web`, `api`, `hybrid`, `soap`).
+- Update `src/prompts.ts` if you introduce new template variables — this updates the `Answers` shape used by templates.
+- Update `src/scaffold.ts` to include rendering/copying of your new preset directory using the existing `renderAndCopyDir` helpers in `src/files.ts`.
+- Use EJS placeholders (`*.ejs`) for dynamic values; rendering is handled by `src/render.ts`.
+
+## Debugging tips
+
+- Inspect the temporary `dest` directory the scaffold writes to — run the CLI against a disposable folder to preview output.
+- For template rendering issues, render a single template via a small Node script that imports `src/render.ts`.
+- Add `console.log` or throw errors in `src/scaffold.ts` or `src/files.ts` to make failures visible while scaffolding (steps are wrapped with `ora` spinners).
+
+## Useful grep targets
+
+- `src/scaffold.ts` — orchestration and presets wiring
+- `src/prompts.ts` — prompt definitions and `Answers` shape
+- `templates/base/package.json.ejs` — base scripts and dependencies for generated projects
+- `templates/playwright/` — default Playwright layout used by scaffolds
+- `eslint.config.js` — linter rules used by the generator and referenced in templates
+- `husky/` and `templates/husky/` — hook templates used by generated projects
+
+## Annextures
+
+### Test Reports on Slack and Gmail for the generated Framework and Tests run.
+
+<img width="1028" height="552" alt="image" src="https://github.com/user-attachments/assets/788005cc-8dbc-419f-8bfb-57410d6a81bf" />
+
+<img width="689" height="652" alt="image" src="https://github.com/user-attachments/assets/da39fb16-24f2-4fc4-b4ab-a0261ea3fbc9" />
+
+### Test report for Unit tests of Generator tool
+
+  <img width="1208" height="652" alt="image" src="https://github.com/user-attachments/assets/6ef0442f-aeb4-4e37-abd1-079574319e8d" />

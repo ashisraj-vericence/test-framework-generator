@@ -1,0 +1,147 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { ReporterDescription } from '@playwright/test';
+
+export interface ProjectConfig {
+  name: string;
+  // optional Playwright device key like 'Desktop Chrome'
+  device?: string;
+  // per-project action timeout (ms), 0 means disabled
+  actionTimeout?: number | 0;
+  navigationTimeout?: number | 0;
+}
+
+export interface FrameworkConfig {
+  // logical environment name (local, qa, staging)
+  envName: string;
+  // full base URL for tests
+  baseURL: string;
+  APP_BASE_URL: string;
+  API_BASE_URL: string;
+  // default test timeout in ms
+  timeout: number;
+  // expect timeout in ms
+  expectTimeout: number;
+  // reporter selection
+  reporter: ReporterDescription[];
+  // directory for reporter results
+  reportDir: string;
+  // projects (browsers) config
+  projects: ProjectConfig[];
+  // per-project action/navigation timeouts (fallback)
+  actionTimeout?: number | 0;
+  navigationTimeout?: number | 0;
+  // optional dotenv filename that was loaded
+  dotenvFile?: string;
+  // Playwright runner options (allow env-specific overrides)
+  fullyParallel?: boolean;
+  forbidOnly?: boolean;
+  retries?: number;
+  workers?: number | undefined;
+  use?: Record<string, any>; // for Playwright's `use` option
+}
+
+// Define the MonocartSummary interface
+export interface MonocartSummary {
+  name: string;
+  dateH: string;
+  durationH: string;
+  cwd: string;
+  outputFile: string;
+  outputDir: string;
+  system: {
+    arch: string;
+    platform: string;
+    release: string;
+    type: string;
+    version: string;
+    hostname: string;
+    node: string;
+    playwright: string;
+    testDir: string;
+    outputFile: string;
+    outputDir: string;
+  };
+  htmlPath: string;
+  jsonPath: string;
+  summaryTable: any;
+}
+
+export interface BaseMetadata {
+  project: string;
+  preset: string;
+  ci: string;
+  reporter: string;
+  language: string;
+  env: string;
+  generatedAt: string;
+  date: string;
+}
+
+export interface SystemMetadata {
+  hostname: string;
+  user: string;
+  platform: string;
+  release: string;
+  version: string;
+  type: string;
+  node: string;
+  playwright: string;
+}
+
+export interface CIMetadata {
+  commit: string;
+  branch: string;
+  runId?: string;
+  pipelineUrl?: string;
+}
+
+export type Metadata = BaseMetadata & SystemMetadata & CIMetadata & Record<string, any>;
+
+export interface StepData {
+  title: string;
+  category: string;
+  duration: number;
+  status: 'passed' | 'failed' | 'skipped';
+  screenshot?: string;
+  error?: string;
+  stackTrace?: string;
+  startTime: string;
+  consoleLogs?: string[];
+  stepIndex?: number;
+  videoStartTime?: number;
+  videoEndTime?: number;
+}
+
+export interface TestData {
+  id: string;
+  title: string;
+  fullTitle: string;
+  file: string;
+  describePath: string[];
+  location: string;
+  duration: number;
+  status: 'passed' | 'failed' | 'skipped' | 'timedOut';
+  retry: number;
+  screenshots: { name: string; path: string }[];
+  steps: StepData[];
+  video?: string;
+  trace?: string;
+  error?: string;
+  errorStack?: string;
+  tags: string[];
+}
+
+export interface FileGroup {
+  file: string;
+  describes: Map<string, TestData[]>;
+  stats: { passed: number; failed: number; skipped: number; total: number };
+}
+
+export interface SuiteStats {
+  total: number;
+  passed: number;
+  failed: number;
+  skipped: number;
+  flaky: number;
+}

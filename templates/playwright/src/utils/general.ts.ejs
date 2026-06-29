@@ -1,0 +1,53 @@
+import fs from 'fs';
+import path from 'path';
+import { PROJECT_ROOT } from './paths';
+
+import dotenv from 'dotenv';
+import { logger } from './logger';
+import { MetadataBuilder } from './metadata-builder';
+
+// Utility function to generate a unique run ID based on the current timestamp
+export const runId = () => {
+  const now = new Date();
+  return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+};
+
+export const loadDotenvIfPresent = (env: string) => {
+  try {
+    const envFile = path.join(PROJECT_ROOT, 'src', 'environments', `.env.${env}`);
+    if (fs.existsSync(envFile)) {
+      dotenv.config({ path: envFile });
+      return envFile;
+    }
+    return undefined;
+  } catch (e) {
+    logger.warn(`Error loading .env file for environment ${env}:`, e);
+  }
+  return undefined;
+};
+
+export type EnvKey = 'dev' | 'qa' | 'staging';
+
+export const getEnv = (env?: string) => {
+  const rawEnv = (env || process.env.PLAYWRIGHT_ENV || process.env.ENV || 'dev').toLowerCase();
+  const key = (['dev', 'qa', 'staging'].includes(rawEnv) ? rawEnv : 'dev') as EnvKey;
+  return key;
+};
+
+/**
+ * Minimal shared metadata for reporters
+ * Used by both the custom reporter and the default HTML reporter
+ */
+export const reportMetaData = () => {
+  return new MetadataBuilder()
+    .addBase({
+      // injected by generator
+      project: process.env.PROJECT_NAME || 'Playwright BDD Framework',
+      preset: 'bdd',
+      ci: 'github',
+      reporter: process.env.DEFAULT_REPORTER,
+      language: 'ts',
+      env: process.env.ENV || 'dev',
+    })
+    .build();
+};

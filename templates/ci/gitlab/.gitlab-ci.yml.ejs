@@ -1,0 +1,18 @@
+stages: [test]
+playwright:
+  image: mcr.microsoft.com/playwright:v1.47.2-jammy
+  stage: test
+  script:
+    - npm i
+    - npm run check
+    - npm run prettier-fix
+    - git diff --exit-code || (echo "Prettier changed files; run 'npm run prettier-fix' and commit." && exit 1)
+    - npm test
+  artifacts:
+    when: always
+    paths:
+    <% if (reporter === "monocart") { %>
+      - artifacts/reports/monocart-report
+    <% } else if (reporter === "allure") { %>
+      - artifacts/reports/allure-results/
+    <% } %>

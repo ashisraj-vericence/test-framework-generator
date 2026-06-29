@@ -1,0 +1,256 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import path from 'path';
+import { describe, expect, it } from 'vitest';
+import { exists, makeTmpDir, read, readJSON, runCLI } from './helpers';
+
+const distEntry = path.resolve(process.cwd(), 'dist/index.js'); // your built CLI
+
+describe('scaffold: package manager and script validation', () => {
+  it('fails with clear error for unsupported package manager', async () => {
+    const tmp = makeTmpDir();
+    const name = 'proj-unsupported-pm';
+    const args = ['init', name, '--pm', 'pnpm', '-y'];
+    const { out, exitCode } = await runCLI(tmp, 'node', [distEntry, ...args]);
+    expect(exitCode).not.toBe(0);
+    expect(out).toMatch(/Invalid option\(s\):\s+--pm must be one of: npm, yarn/i);
+  });
+
+  it('fails with clear error for missing script', async () => {
+    const tmp = makeTmpDir();
+    const name = 'proj-yarn-missing-script';
+    const args = ['init', name, '--pm', 'yarn', '--notifications', 'false', '-y'];
+    const { exitCode } = await runCLI(tmp, 'node', [distEntry, ...args]);
+    expect(exitCode).toBe(0);
+    const root = path.join(tmp, name);
+    const pkg = readJSON(path.join(root, 'package.json'));
+    expect(pkg.scripts['run-and-notify']).toBeUndefined();
+    expect(pkg.scripts['notify-report']).toBeUndefined();
+    // Simulate running the missing script
+    let result = await runCLI(root, 'npm', ['install']);
+    expect(result.exitCode).toBe(0);
+    // add regexp to ignore number of packages added
+    expect(result.out).toMatch(/added \d+ packages, and audited \d+ packages in/i);
+    result = await runCLI(root, 'yarn', ['run-and-notify']);
+    expect(result.exitCode).not.toBe(0);
+    expect(result.out).toMatch(/error Command "run-and-notify" not found./i);
+  });
+
+  it('generates correct scripts for each package manager', async () => {
+    for (const pm of ['npm', 'yarn']) {
+      const tmp = makeTmpDir();
+      const name = `proj-${pm}-scripts`;
+      const args = ['init', name, '--pm', pm, '-y'];
+      const { exitCode } = await runCLI(tmp, 'node', [distEntry, ...args]);
+      expect(exitCode).toBe(0);
+      const root = path.join(tmp, name);
+      const pkg = readJSON(path.join(root, 'package.json'));
+      // Core scripts must exist
+      expect(pkg.scripts.test).toMatch(/playwright test/);
+      expect(pkg.scripts['test:ui']).toMatch(/playwright test --ui/);
+      expect(pkg.scripts['test:headed']).toMatch(/playwright test --headed/);
+      expect(Object.keys(pkg.scripts)).toContain('run-and-notify');
+    }
+  });
+});
+
+// helper to build args from a case
+function toArgs(name: string, c: any): string[] {
+  const args = ['init', name, '--pm', c.pm, '--reporter', c.reporter, '--ci', c.ci];
+  if (c.lang === 'js') args.push('--js');
+  if (c.husky === false) args.push('--no-husky');
+  // non-interactive
+  args.push('-y');
+  return args;
+}
+
+// Assertions that adapt to options
+function expectScripts(pkg: any, c: any) {
+  const pmBin = c.pm === 'yarn' ? 'yarn' : 'npx';
+  const xenv = `${pmBin} cross-env`;
+
+  // core test scripts
+  expect(pkg.scripts.test).toMatch(`playwright test`);
+  expect(pkg.scripts['test:ui']).toMatch(`playwright test --ui`);
+  expect(pkg.scripts['test:headed']).toMatch(`playwright test --headed`);
+
+  if (c.reporter === 'allure') {
+    // cross-env should be prefixed by pmBin
+    expect(pkg.scripts['allure:report:generate']).toBe(
+      `${xenv} ALLURE_NO_ANALYTICS=1 allure generate --single-file artifacts/reports/allure-results -o artifacts/reports/allure-report --clean`,
+    );
+    expect(pkg.scripts['allure:report:show']).toBe(
+      `${xenv} ALLURE_NO_ANALYTICS=1 allure open artifacts/reports/allure-report`,
+    );
+    expect(pkg.scripts['allure:report:open']).toBe(
+      `npm run allure:report:generate && npm run allure:report:show`,
+    );
+  } else if (c.reporter === 'monocart') {
+    expect(pkg.scripts['monocart:report:open']).toBe(
+      `${pmBin} monocart show-report ${path.join('artifacts', 'reports', 'monocart-report')}/`,
+    );
+  } else if (c.reporter === 'html') {
+    expect(pkg.scripts['html:report:open']).toBe(
+      `${pmBin} playwright show-report ${path.join('artifacts', 'reports', 'html-reports')}`,
+    );
+  }
+
+  // Husky wiring
+  if (c.husky === false) {
+    expect(pkg.scripts.prepare).toBeUndefined();
+    expect(pkg['lint-staged']).toBeUndefined();
+  } else {
+    expect(pkg.scripts.prepare).toBe('husky');
+    expect(pkg['lint-staged']).toBeTruthy();
+  }
+}
+
+function expectFiles(root: string, c: any) {
+  // base files always
+  if (['github', 'gitlab'].includes(c.ci)) {
+    expect(
+      exists(
+        path.join(
+          root,
+          c.ci === 'github'
+            ? ['.github', 'workflows', 'github-ci.yml'].join(path.sep)
+            : '.gitlab-ci.yml',
+        ),
+      ),
+    ).toBe(true);
+  }
+
+  if (c.husky === true) {
+    expect(exists(path.join(root, '.husky', 'commit-msg'))).toBe(true);
+    expect(exists(path.join(root, '.husky', 'pre-commit'))).toBe(true);
+  }
+  expect(exists(path.join(root, '.vscode', 'settings.json'))).toBe(true);
+  expect(exists(path.join(root, '.vscode', 'extensions.json'))).toBe(true);
+
+  if (['allure', 'monocart'].includes(c.reporter)) {
+    expect(
+      exists(
+        path.join(
+          root,
+          'docs',
+          'reporters',
+          c.reporter === 'allure' ? 'allure' : 'monocart',
+          'README.md',
+        ),
+      ),
+    ).toBe(true);
+  }
+
+  expect(exists(path.join(root, '.vscode', 'extensions.json'))).toBe(true);
+
+  expect(exists(path.join(root, 'package.json'))).toBe(true);
+
+  expect(exists(path.join(root, 'playwright.config.ts'))).toBe(true);
+  expect(exists(path.join(root, 'src', 'utils', 'global-setup.ts'))).toBe(true);
+  expect(exists(path.join(root, 'src', 'utils', 'global-teardown.ts'))).toBe(true);
+  // custom reporter always included with runner=playwright
+  expect(exists(path.join(root, 'src', 'utils', 'custom-reporter.ts'))).toBe(true);
+}
+
+describe('init (matrix)', async () => {
+  const cases = [
+    // minimal TS + npm + allure + playwright + github + husky on
+    {
+      id: 'js-npm-allure-gh-husky-web-no-notifications',
+      lang: 'js',
+      pm: 'npm',
+      reporter: 'allure',
+      ci: 'github',
+      husky: true,
+      preset: 'web',
+      Notifications: false,
+    },
+    // monocart + yarn
+    {
+      id: 'ts-yarn-monocart-gl-husky-api-notifications',
+      lang: 'ts',
+      pm: 'yarn',
+      reporter: 'monocart',
+      ci: 'gitlab',
+      husky: true,
+      preset: 'api',
+      notifications: true,
+    },
+    // html + npm + gitlab
+    {
+      id: 'ts-npm-html-gl-nohusky-preset-soap-zephyr',
+      lang: 'ts',
+      pm: 'npm',
+      reporter: 'html',
+      ci: 'gitlab',
+      husky: false,
+      preset: 'soap',
+      zephyr: true,
+    },
+    {
+      id: 'ts-yarn-monocart-noci-hybrid-nozephyr',
+      lang: 'ts',
+      pm: 'yarn',
+      ci: 'none',
+      reporter: 'monocart',
+      preset: 'hybrid',
+      zephyr: false,
+    },
+  ] as const;
+
+  for (const c of cases) {
+    it(`scaffolds: ${c.id}`, async () => {
+      const tmp = makeTmpDir();
+      const name = `proj-${c.id}`;
+      const { out, exitCode } = await runCLI(tmp, 'node', [distEntry, ...toArgs(name, c)]);
+
+      expect(exitCode).toBe(0);
+      expect(out).toMatch(/Create project folder/i);
+
+      const root = path.join(tmp, name);
+      const pkg = readJSON(path.join(root, 'package.json'));
+      expect(pkg.type).toBe('module');
+
+      // Files & scripts according to options
+      expectFiles(root, c);
+      expectScripts(pkg, c);
+
+      // Playwright config sanity where applicable
+      const cfg = read(path.join(root, 'playwright.config.ts'));
+      const defaultCfg = read(path.join(root, 'src', 'configs', 'default.ts'));
+      // reporter presence
+      expect(cfg).toMatch(/reporter: cfg.reporter,/);
+      if (c.reporter === 'allure') {
+        expect(defaultCfg).toMatch(/'allure-playwright',/);
+        expect(defaultCfg).toMatch(/resultsDir: .*allure-results/);
+      }
+      if (c.reporter === 'monocart') {
+        expect(defaultCfg).toMatch(/'monocart-reporter',/);
+        expect(defaultCfg).toMatch(/outputFile: path.join/);
+      }
+
+      if (c.reporter === 'allure') {
+        expect(cfg).toMatch(/const metaData = reportMetaData()/);
+      }
+      // custom reporter also present
+      // TODO: Add/update for the new option Framework
+      // expect(defaultCfg).toMatch(/\.\/src\/utils\/custom-reporter\.ts/);
+
+      // custom reporter file exists
+      // expect(exists(path.join(root, 'src', 'utils', 'custom-reporter.ts'))).toBe(true);
+
+      // Install dependencies and check for errors
+      let res = await runCLI(root, c.pm, ['install']);
+      expect(res.exitCode).toBe(0);
+      if (c.pm === 'npm') {
+        expect(res.out).toMatch(/added \d+ packages, and audited \d+ packages in|up to date/i);
+      } else if (c.pm === 'yarn') {
+        expect(res.out).toMatch(/success Saved lockfile.|Already up to date./i);
+      }
+      // Run check script to validate no errors
+      res = await runCLI(root, c.pm, ['run', 'check']);
+      expect(res.exitCode).toBe(0);
+      expect(res.out).toMatch(/tsc --noEmit/);
+      expect(res.out).toMatch(/eslint . --fix --max-warnings 0 --no-cache/);
+    }, 120_000);
+  }
+});
