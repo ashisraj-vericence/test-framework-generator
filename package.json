@@ -6,7 +6,7 @@
   "exports": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "playwright-test-framework-generator": "./bin/cli.js"
+    "test-framework-generator": "./bin/cli.js"
   },
   "files": [
     "src",

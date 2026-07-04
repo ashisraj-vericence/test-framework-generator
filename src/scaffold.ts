@@ -469,4 +469,65 @@ export async function scaffold(a: Answers) {
   await step('Include docs', async () => {
     await copyDir(TPL('docs/best-practices'), path.join(dest, 'docs/best-practices'));
   });
+  if (a.mode === 'convert') {
+    await step('Add legacy conversion placeholder', async () => {
+      const placeholder = `# Legacy conversion placeholder
+
+This project was created with the Playwright conversion workflow.
+
+Legacy source:
+- language: ${a.sourceLanguage ?? 'java'}
+- framework: ${a.sourceFramework ?? 'selenium'}
+- style: ${a.sourceStyle ?? 'non-bdd'}
+- path: ${a.sourcePath ?? './legacy'}
+- conversion agent: ${a.conversionAgent ?? 'default'}
+
+Next steps:
+1. Review legacy code under the source path.
+2. Map Selenium/TestNG/Cucumber patterns to Playwright/Playwright BDD.
+3. Replace this note with actual converted files or generated test skeletons.
+`;
+      await fs.writeFile(path.join(dest, 'LEGACY_CONVERSION.md'), placeholder, 'utf8');
+      await fs.writeFile(
+        path.join(dest, 'src', 'legacy-conversion.ts'),
+        `/**
+ * Placeholder for legacy conversion helpers.
+ *
+ * Replace this file with generated migration helpers or translated test code.
+ */
+export const legacyConversionPlaceholder = {
+  sourceLanguage: '${a.sourceLanguage ?? 'java'}',
+  sourceFramework: '${a.sourceFramework ?? 'selenium'}',
+  sourceStyle: '${a.sourceStyle ?? 'non-bdd'}',
+  sourcePath: '${a.sourcePath ?? './legacy'}',
+  conversionAgent: '${a.conversionAgent ?? 'default'}',
+};
+`,
+        'utf8',
+      );
+
+      await fs.writeFile(
+        path.join(dest, 'src', 'agents', 'conversion-agent.ts'),
+        `/**
+ * Conversion agent implementation stub.
+ *
+ * This file reflects the selected conversion agent and can be replaced with
+ * real migration logic or AI-assisted translation support.
+ */
+
+export const conversionAgent = {
+  type: '${a.conversionAgent ?? 'default'}',
+  describe() {
+    return '${
+      a.conversionAgent === 'ai-assisted'
+        ? 'AI-assisted conversion: generate smarter migration guidance and skeletons.'
+        : 'Default conversion placeholder: scaffold a target project and add manual migration notes.'
+    }';
+  },
+};
+`,
+        'utf8',
+      );
+    });
+  }
 }

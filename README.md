@@ -63,7 +63,7 @@ Below is a concise description of the main files and folders in this repository.
 ### Project Structure
 
 ```text
-playwright-test-framework-generator/
+test-framework-generator/
 ├── src/                          # Core implementation of the CLI
 │                                 # and scaffolding logic
 │   ├── index.ts                    # CLI entry point — parses arguments,
@@ -141,11 +141,17 @@ npm install
 npm run build
 ```
 
+### Link the CLI binary in your shell, so npx can resolve test-framework-generator
+
+```sh
+npm link
+```
+
 ### Use the CLI to scaffold a project
 
 Run the generator without installing globally using `npx` or by invoking the local `bin/cli.js`:
 
-Use `node ./bin/cli.js --help` or `npx playwright-test-framework-generator --help` for CLI options.
+Use `node ./bin/cli.js --help` or `npx test-framework-generator --help` for CLI options.
 
 #### Non-Interactive Mode (Recommended for Automation)
 
@@ -157,13 +163,13 @@ Non-interactive mode allows you to scaffold projects entirely via CLI flags, byp
 
 ```sh
 # Scaffold a hybrid preset project with Allure and GitHub CI, non-interactively
-npx playwright-test-framework-generator init pw-tests-hybrid --preset hybrid --reporter allure --ci github
+npx test-framework-generator init pw-tests-hybrid --preset hybrid --reporter allure --ci github
 
 # Or use the -y flag to skip all prompts and use defaults/non-interactive mode
-npx playwright-test-framework-generator init pw-tests-hybrid -y --preset hybrid --reporter allure --ci github
+npx test-framework-generator init pw-tests-hybrid -y --preset hybrid --reporter allure --ci github
 
 # Scaffold a SOAP preset project non-interactively
-npx playwright-test-framework-generator init my-soap-project --preset soap --ci github
+npx test-framework-generator init my-soap-project --preset soap --ci github
 ```
 
 **When to use non-interactive mode:**
@@ -182,7 +188,7 @@ If you run the CLI without specifying all required flags, it will prompt you for
 
 ```sh
 # Interactive mode (prompts for missing options)
-npx playwright-test-framework-generator init pw-tests-web
+npx test-framework-generator init pw-tests-web
 ```
 
 ### After scaffolding:
@@ -230,7 +236,7 @@ A few recommended commands and workflows for developing the generator and iterat
 
 - **Build the CLI:** `npm run build` (outputs `dist/`). Run before invoking `node ./bin/cli.js`.
 - **Dev mode:** `npm run dev` for a TypeScript watcher; run the local CLI in another shell after compilation completes.
-- **Run the CLI locally:** `node ./bin/cli.js init my-tests --preset hybrid --reporter allure --ci github` or use `npx playwright-test-framework-generator init ...`.
+- **Run the CLI locally:** `node ./bin/cli.js init my-tests --preset hybrid --reporter allure --ci github` or use `npx test-framework-generator init ...`.
 - **Run tests:** `npx vitest` or `npm test`. Prefer `npm run build` first for integration tests that exercise the built `dist/` output.
 
 ## Linters & Typechecking

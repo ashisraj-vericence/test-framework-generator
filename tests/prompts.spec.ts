@@ -68,4 +68,38 @@ describe('askQuestions (non-interactive flags mapping)', () => {
     expect(ans.preset).toBe('soap');
     expect(ans.notifications).toBe(true);
   });
+
+  it('maps convert flags to Answers correctly (java selenium bdd)', async () => {
+    const flags = {
+      yes: true,
+      js: false,
+      pm: 'npm',
+      ci: 'github',
+      reporter: 'allure',
+      husky: true,
+      preset: 'web',
+      notifications: true,
+      sourceLanguage: 'java',
+      sourceFramework: 'selenium',
+      sourceStyle: 'bdd',
+      sourcePath: './legacy-tests',
+    } as any;
+
+    const ans = await askQuestions('convertproj', flags, 'convert');
+
+    expect(ans.projectName).toBe('convertproj');
+    expect(ans.language).toBe('ts');
+    expect(ans.packageManager).toBe('npm');
+    expect(ans.ci).toBe('github');
+    expect(ans.reporter).toBe('allure');
+    expect(ans.husky).toBe(true);
+    expect(ans.preset).toBe('web');
+    expect(ans.notifications).toBe(true);
+    expect(ans.mode).toBe('convert');
+    expect(ans.sourceLanguage).toBe('java');
+    expect(ans.sourceFramework).toBe('selenium');
+    expect(ans.sourceStyle).toBe('bdd');
+    expect(ans.sourcePath).toBe('./legacy-tests');
+    expect(ans.conversionAgent).toBe('default');
+  });
 });

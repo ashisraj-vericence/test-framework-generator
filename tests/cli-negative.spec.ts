@@ -7,7 +7,7 @@ const distEntry = path.resolve(process.cwd(), 'dist/index.js'); // your built CL
 describe('CLI negative cases', () => {
   it('fails when project-name is missing', async () => {
     const tmp = makeTmpDir();
-    const { out, exitCode } = await runCLI(tmp, 'node', [distEntry, 'init']); // no project-name
+    const { out, exitCode } = await runCLI(tmp, 'node', [distEntry, 'gen']); // no project-name
 
     // Commander exits with non-zero on argument error; our helper doesn't throw
     expect(exitCode).toBe(1);
@@ -24,7 +24,7 @@ describe('CLI negative cases', () => {
     const tmp = makeTmpDir();
     const { out, exitCode } = await runCLI(tmp, 'node', [
       distEntry,
-      'init',
+      'gen',
       'proj-unknown',
       '--not-a-real-flag',
     ]);

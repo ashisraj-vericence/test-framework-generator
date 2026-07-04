@@ -5,17 +5,15 @@ import { makeTmpDir, runCLI } from './helpers';
 const distEntry = path.resolve(process.cwd(), 'dist/index.js'); // your built CLI
 
 describe('CLI help', () => {
-  it('prints help for `init -h` with all options', async () => {
+  it('prints help for `gen -h` with all options', async () => {
     const tmp = makeTmpDir();
-    const { out, exitCode } = await runCLI(tmp, 'node', [distEntry, 'init', '-h']);
+    const { out, exitCode } = await runCLI(tmp, 'node', [distEntry, 'gen', '-h']);
 
     // Commander usually exits 0 for help
     expect(exitCode).toBe(0);
 
     // Top usage line (escape [options])
-    expect(out).toMatch(
-      /^Usage:\s+playwright-test-framework-generator init \[options\] <project-name>/im,
-    );
+    expect(out).toMatch(/^Usage:\s+test-framework-generator gen \[options\] <project-name>/im);
 
     // Arguments section
     expect(out).toMatch(/Arguments:\s+project-name\s+folder to create/im);
@@ -47,5 +45,24 @@ describe('CLI help', () => {
       /--preset <name>\s+Quick preset \(web\|api\|soap\|hybrid\) \(default:\s+"web"\)/i,
     );
     expect(out).toMatch(/-h, --help\s+display help for command/i);
+  });
+
+  it('prints help for `convert -h` with legacy conversion options', async () => {
+    const tmp = makeTmpDir();
+    const { out, exitCode } = await runCLI(tmp, 'node', [distEntry, 'convert', '-h']);
+
+    expect(exitCode).toBe(0);
+    expect(out).toMatch(/^Usage:\s+test-framework-generator convert \[options\] <project-name>/im);
+    expect(out).toMatch(/--source-language <name>/i);
+    expect(out).toMatch(/Legacy source language \(java\|kotlin\|js\)/i);
+    expect(out).toMatch(/--source-framework <name>/i);
+    expect(out).toMatch(/Legacy source framework/i);
+    expect(out).toMatch(/selenium\|testng\|junit\|cucumber/i);
+    expect(out).toMatch(/--source-style <name>/i);
+    expect(out).toMatch(/Legacy test style \(bdd\|non-bdd\)/i);
+    expect(out).toMatch(/--source-path <path>/i);
+    expect(out).toMatch(/Path to legacy source code/i);
+    expect(out).toMatch(/--conversion-agent <name>/i);
+    expect(out).toMatch(/Conversion agent \(default\|ai-assisted\)/i);
   });
 });

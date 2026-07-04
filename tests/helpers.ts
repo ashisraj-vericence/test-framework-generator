@@ -10,7 +10,7 @@ import stripAnsi from 'strip-ansi';
  * @param prefix
  * @returns The path to the created temporary directory
  */
-export const makeTmpDir = (prefix = 'playwright-test-framework-generator-') => {
+export const makeTmpDir = (prefix = 'test-framework-generator-') => {
   const dir = mkdtempSync(path.join(tmpdir(), prefix));
   return dir;
 };

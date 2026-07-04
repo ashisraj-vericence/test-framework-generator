@@ -25,6 +25,12 @@ export type Answers = {
   zephyr: boolean;
   framework: 'playwright' | 'playwright-bdd';
   preset: 'web' | 'api' | 'soap' | 'hybrid';
+  mode: 'generate' | 'convert';
+  sourceLanguage?: 'java' | 'kotlin' | 'js';
+  sourceFramework?: 'selenium' | 'testng' | 'junit' | 'cucumber';
+  sourceStyle?: 'bdd' | 'non-bdd';
+  sourcePath?: string;
+  conversionAgent?: 'default' | 'ai-assisted';
 };
 
 // ---------------------------------------------------------------------------
@@ -39,6 +45,13 @@ type ListQ<K extends keyof Answers> = {
   default?: Answers[K];
 };
 
+type InputQ<K extends keyof Answers> = {
+  type: 'input';
+  name: K;
+  message: string;
+  default?: string;
+};
+
 type ConfirmQ<K extends keyof Answers> = {
   type: 'confirm';
   name: K;
@@ -47,7 +60,7 @@ type ConfirmQ<K extends keyof Answers> = {
 };
 
 // Union type used to satisfy the `questions` array typing below
-type Q = ListQ<keyof Answers> | ConfirmQ<keyof Answers>;
+type Q = ListQ<keyof Answers> | ConfirmQ<keyof Answers> | InputQ<keyof Answers>;
 
 /**
  * Ask the user configuration questions and return a normalized `Answers`.
@@ -61,7 +74,11 @@ type Q = ListQ<keyof Answers> | ConfirmQ<keyof Answers>;
  * @param projectName - the target folder/name for the new project
  * @param flags - parsed CLI flags (may contain defaults like --pm, --js, --ci)
  */
-export async function askQuestions(projectName: string, flags: any): Promise<Answers> {
+export async function askQuestions(
+  projectName: string,
+  flags: any,
+  mode: 'generate' | 'convert' = 'generate',
+): Promise<Answers> {
   // Non-interactive detection: either explicit flags or CI environment vars
   const nonInteractive =
     !!flags.yes || !!flags.nonInteractive || process.env.CI === '1' || process.env.CI === 'true';
@@ -72,7 +89,7 @@ export async function askQuestions(projectName: string, flags: any): Promise<Ans
   const base: Partial<Answers> = {
     projectName,
     // NOTE: flags.js indicates the user passed `--js`; default language is
-    // TypeScript unless `--js` is present. (Fixed: previously always 'ts')
+    // TypeScript unless `--js` is present.
     language: flags.js ? 'js' : 'ts',
     packageManager: flags.pm === 'yarn' ? 'yarn' : 'npm',
     ci: flags.ci,
@@ -83,6 +100,12 @@ export async function askQuestions(projectName: string, flags: any): Promise<Ans
     zephyr: !!flags.zephyr,
     framework: flags.framework ?? 'playwright',
     preset: flags.preset,
+    mode,
+    sourceLanguage: flags.sourceLanguage,
+    sourceFramework: flags.sourceFramework,
+    sourceStyle: flags.sourceStyle,
+    sourcePath: flags.sourcePath,
+    conversionAgent: flags.conversionAgent,
   };
 
   // If non-interactive, return base values (or sensible defaults) immediately.
@@ -99,13 +122,23 @@ export async function askQuestions(projectName: string, flags: any): Promise<Ans
       zephyr: base.zephyr ?? false,
       framework: (base.framework ?? 'playwright') as 'playwright' | 'playwright-bdd',
       preset: (base.preset ?? 'web') as 'web' | 'api' | 'soap' | 'hybrid',
+      mode,
+      sourceLanguage: (base.sourceLanguage ?? 'java') as 'java' | 'kotlin' | 'js',
+      sourceFramework: (base.sourceFramework ?? 'selenium') as
+        | 'selenium'
+        | 'testng'
+        | 'junit'
+        | 'cucumber',
+      sourceStyle: (base.sourceStyle ?? 'non-bdd') as 'bdd' | 'non-bdd',
+      sourcePath: base.sourcePath ?? './legacy',
+      conversionAgent: (base.conversionAgent ?? 'default') as 'default' | 'ai-assisted',
     };
   }
 
   // Interactive questionnaire. The `as const satisfies readonly Q[]` typing
   // ensures a read-only tuple-like structure while still matching our union
   // `Q` type above.
-  const questions = [
+  const questions: Q[] = [
     {
       type: 'list',
       name: 'packageManager',
@@ -180,13 +213,65 @@ export async function askQuestions(projectName: string, flags: any): Promise<Ans
       message: 'Include Zephyr publish stub?',
       default: base.zephyr,
     },
-  ] as const satisfies readonly Q[];
+  ];
 
-  // `inquirer.prompt` typing can be awkward with our union; cast pragmatically
-  // to `any` and rely on the `Answers` type when merging the result.
+  if (mode === 'convert') {
+    questions.push(
+      {
+        type: 'list',
+        name: 'sourceLanguage' as const,
+        message: 'Legacy source language?',
+        choices: [
+          { name: 'Java', value: 'java' },
+          { name: 'Kotlin', value: 'kotlin' },
+          { name: 'JavaScript', value: 'js' },
+        ],
+        default: base.sourceLanguage ?? 'java',
+      },
+      {
+        type: 'list',
+        name: 'sourceFramework' as const,
+        message: 'Legacy source framework?',
+        choices: [
+          { name: 'Selenium', value: 'selenium' },
+          { name: 'TestNG', value: 'testng' },
+          { name: 'JUnit', value: 'junit' },
+          { name: 'Cucumber', value: 'cucumber' },
+        ],
+        default: base.sourceFramework ?? 'selenium',
+      },
+      {
+        type: 'list',
+        name: 'sourceStyle' as const,
+        message: 'Legacy test style?',
+        choices: [
+          { name: 'Non-BDD / classic tests', value: 'non-bdd' },
+          { name: 'BDD / Gherkin style', value: 'bdd' },
+        ],
+        default: base.sourceStyle ?? 'non-bdd',
+      },
+      {
+        type: 'input',
+        name: 'sourcePath' as const,
+        message: 'Path to legacy source code?',
+        default: base.sourcePath ?? './legacy',
+      },
+      {
+        type: 'list',
+        name: 'conversionAgent' as const,
+        message: 'Conversion agent?',
+        choices: [
+          { name: 'Default placeholder', value: 'default' },
+          { name: 'AI-assisted conversion', value: 'ai-assisted' },
+        ],
+        default: base.conversionAgent ?? 'default',
+      },
+    );
+  }
+
   const answers = await (inquirer as any).prompt(questions);
 
   // Merge flag-derived defaults (`base`) with interactive `answers`. Values in
-  // `answers` take precedence. The final object conforms to `Answers`.
-  return { ...(base as Answers), ...(answers as Answers) };
+  // answers take precedence. The final object conforms to `Answers`.
+  return { ...(base as Answers), ...(answers as Answers), mode };
 }

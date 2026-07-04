@@ -8,7 +8,7 @@ describe('template validity', () => {
   it('renders VS Code settings and eslint flat config', async () => {
     const tmp = makeTmpDir();
     const name = 'linting';
-    await runCLI(tmp, 'node', [distEntry, 'init', name, '--pm', 'npm']);
+    await runCLI(tmp, 'node', [distEntry, 'gen', name, '--pm', 'npm']);
     const root = path.join(tmp, name);
     const vscode = read(path.join(root, '.vscode', 'settings.json'));
     expect(() => JSON.parse(vscode)).not.toThrow();
