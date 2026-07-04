@@ -125,10 +125,7 @@ export async function askQuestions(
       mode,
       sourceLanguage: (base.sourceLanguage ?? 'java') as 'java' | 'kotlin' | 'js',
       sourceFramework: (base.sourceFramework ?? 'selenium') as
-        | 'selenium'
-        | 'testng'
-        | 'junit'
-        | 'cucumber',
+        'selenium' | 'testng' | 'junit' | 'cucumber',
       sourceStyle: (base.sourceStyle ?? 'non-bdd') as 'bdd' | 'non-bdd',
       sourcePath: base.sourcePath ?? './legacy',
       conversionAgent: (base.conversionAgent ?? 'default') as 'default' | 'ai-assisted',
