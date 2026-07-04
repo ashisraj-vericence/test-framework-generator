@@ -13,7 +13,7 @@ describe('CLI help', () => {
     expect(exitCode).toBe(0);
 
     // Top usage line (escape [options])
-    expect(out).toMatch(/^Usage:\s+test-framework-generator gen \[options\] <project-name>/im);
+    expect(out).toMatch(/^Usage:\s+test-framework-generator gen|init \[options\] <project-name>/im);
 
     // Arguments section
     expect(out).toMatch(/Arguments:\s+project-name\s+folder to create/im);

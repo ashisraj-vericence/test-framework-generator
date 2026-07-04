@@ -17,9 +17,10 @@ import {
     ALLURE_REPORT_DIR,
     ALLURE_REPORT_PATH,
     SECOND_SCREENSHOT_PATH,
-  <% } %>
+  <% } else if (reporter === "html") { %>
   HTML_REPORTS_DIR,
   HTML_REPORTS_PATH,
+  <% } %>
   ZIP_FILE_PATH,
 } from '@utils';
 import AdmZip from 'adm-zip';

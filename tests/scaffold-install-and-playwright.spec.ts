@@ -15,7 +15,7 @@ describe.skip('Scaffolded projects: install, check, and playwright', () => {
 
     // Scaffold the project
     const args = [
-      'init',
+      'gen',
       testProjectName,
       '--pm',
       'npm',
@@ -41,7 +41,7 @@ describe.skip('Scaffolded projects: install, check, and playwright', () => {
     expect(res.out).toMatch(/eslint . --fix --max-warnings 0 --no-cache/);
 
     // Run Playwright tests with HTML reporter
-    res = await runCLI(scaffoldTestDir, 'npm', ['run', 'test:headed']);
+    res = await runCLI(scaffoldTestDir, 'npm', ['run', 'test:runner:dev']);
     expect(res.exitCode).toBe(0);
     expect(res.out).toMatch(/Test run started with \d+ tests/i);
 

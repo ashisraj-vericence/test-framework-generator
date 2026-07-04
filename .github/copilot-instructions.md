@@ -20,7 +20,7 @@ Purpose: get an AI coding agent productive fast. This file highlights the repo's
 **Developer Workflows / Commands:**
 
 - Build the CLI: `npm run build` (produces `dist/`).
-- Local run (after build): `node ./bin/cli.js init my-tests --preset hybrid --reporter allure --ci github`.
+- Local run (after build): `node ./bin/cli.js gen my-tests --preset hybrid --reporter allure --ci github`.
 - Fast dev loop: `npm run dev` (watcher), then run the CLI in another shell after compile.
 - Lint: `npm run lint` (root). For generated projects: `npm --prefix ./path/to/generated run lint`.
 - Typecheck: `npm run typecheck` or `npx tsc --noEmit`.
@@ -46,7 +46,7 @@ Purpose: get an AI coding agent productive fast. This file highlights the repo's
 
 **Debugging Tips:**
 
-- Run the CLI against a temporary directory to inspect outputs (`node ./bin/cli.js init /tmp/x --preset web`).
+- Run the CLI against a temporary directory to inspect outputs (`node ./bin/cli.js gen /tmp/x --preset web`).
 - Add `console.log` or throw inside `src/scaffold.ts` steps to surface errors (steps wrapped with `ora` spinners).
 - For rendering issues, import and call `src/render.ts` from a small Node script to reproduce.
 

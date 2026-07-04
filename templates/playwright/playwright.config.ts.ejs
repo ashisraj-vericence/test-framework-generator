@@ -1,11 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import getConfig from '@configs';
 import { defineConfig, devices } from '@playwright/test';
-import { getEnv, PROJECT_ROOT, reportMetaData <% if (reporter === "html") { %>, REPORTS_DIR<% } %> } from '@utils';
+import { getEnv, PROJECT_ROOT, reportMetaData } from '@utils';
 import path from 'path';
-<% if (reporter === "monocart") { %>
-import fs from 'fs';
-<% } %>
 <% if (framework === "playwright-bdd") { %>
 import { defineBddConfig } from 'playwright-bdd';
 <% } %>

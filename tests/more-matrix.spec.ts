@@ -7,7 +7,7 @@ const distEntry = path.resolve(process.cwd(), 'dist/index.js'); // your built CL
 
 function toArgs(name: string, c: any): string[] {
   const args = [
-    'init',
+    'gen',
     name,
     '--pm',
     c.pm,

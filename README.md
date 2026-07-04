@@ -29,7 +29,7 @@ A zero‑setup CLI to scaffold test repositories with batteries included: Packag
 
 A compact set of features that this scaffold and CLI provide out of the box:
 
-- Zero‑setup CLI: scaffold a Playwright test repository with a single `init` command.
+- Zero‑setup CLI: scaffold a Playwright test repository with a single `gen` command (alias: `init`).
 - TypeScript and JavaScript presets: start tests in your preferred language.
 - Page Object Model (POM): pre-built `pages/` structure and example page classes.
 - Custom fixtures and extended fixtures: reusable test setup and teardown helpers.
@@ -163,13 +163,13 @@ Non-interactive mode allows you to scaffold projects entirely via CLI flags, byp
 
 ```sh
 # Scaffold a hybrid preset project with Allure and GitHub CI, non-interactively
-npx test-framework-generator init pw-tests-hybrid --preset hybrid --reporter allure --ci github
+npx test-framework-generator gen pw-tests-hybrid --preset hybrid --reporter allure --ci github
 
 # Or use the -y flag to skip all prompts and use defaults/non-interactive mode
-npx test-framework-generator init pw-tests-hybrid -y --preset hybrid --reporter allure --ci github
+npx test-framework-generator gen pw-tests-hybrid -y --preset hybrid --reporter allure --ci github
 
 # Scaffold a SOAP preset project non-interactively
-npx test-framework-generator init my-soap-project --preset soap --ci github
+npx test-framework-generator gen my-soap-project --preset soap --ci github
 ```
 
 **When to use non-interactive mode:**
@@ -188,7 +188,7 @@ If you run the CLI without specifying all required flags, it will prompt you for
 
 ```sh
 # Interactive mode (prompts for missing options)
-npx test-framework-generator init pw-tests-web
+npx test-framework-generator gen pw-tests-web
 ```
 
 ### After scaffolding:
@@ -236,7 +236,7 @@ A few recommended commands and workflows for developing the generator and iterat
 
 - **Build the CLI:** `npm run build` (outputs `dist/`). Run before invoking `node ./bin/cli.js`.
 - **Dev mode:** `npm run dev` for a TypeScript watcher; run the local CLI in another shell after compilation completes.
-- **Run the CLI locally:** `node ./bin/cli.js init my-tests --preset hybrid --reporter allure --ci github` or use `npx test-framework-generator init ...`.
+- **Run the CLI locally:** `node ./bin/cli.js gen my-tests --preset hybrid --reporter allure --ci github` or use `npx test-framework-generator gen ...`.
 - **Run tests:** `npx vitest` or `npm test`. Prefer `npm run build` first for integration tests that exercise the built `dist/` output.
 
 ## Linters & Typechecking

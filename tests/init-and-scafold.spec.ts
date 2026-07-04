@@ -9,7 +9,7 @@ describe('scaffold: package manager and script validation', () => {
   it('fails with clear error for unsupported package manager', async () => {
     const tmp = makeTmpDir();
     const name = 'proj-unsupported-pm';
-    const args = ['init', name, '--pm', 'pnpm', '-y'];
+    const args = ['gen', name, '--pm', 'pnpm', '-y'];
     const { out, exitCode } = await runCLI(tmp, 'node', [distEntry, ...args]);
     expect(exitCode).not.toBe(0);
     expect(out).toMatch(/Invalid option\(s\):\s+--pm must be one of: npm, yarn/i);
@@ -18,7 +18,7 @@ describe('scaffold: package manager and script validation', () => {
   it('fails with clear error for missing script', async () => {
     const tmp = makeTmpDir();
     const name = 'proj-yarn-missing-script';
-    const args = ['init', name, '--pm', 'yarn', '--notifications', 'false', '-y'];
+    const args = ['gen', name, '--pm', 'yarn', '--notifications', 'false', '-y'];
     const { exitCode } = await runCLI(tmp, 'node', [distEntry, ...args]);
     expect(exitCode).toBe(0);
     const root = path.join(tmp, name);
@@ -39,7 +39,7 @@ describe('scaffold: package manager and script validation', () => {
     for (const pm of ['npm', 'yarn']) {
       const tmp = makeTmpDir();
       const name = `proj-${pm}-scripts`;
-      const args = ['init', name, '--pm', pm, '-y'];
+      const args = ['gen', name, '--pm', pm, '-y'];
       const { exitCode } = await runCLI(tmp, 'node', [distEntry, ...args]);
       expect(exitCode).toBe(0);
       const root = path.join(tmp, name);
@@ -55,7 +55,7 @@ describe('scaffold: package manager and script validation', () => {
 
 // helper to build args from a case
 function toArgs(name: string, c: any): string[] {
-  const args = ['init', name, '--pm', c.pm, '--reporter', c.reporter, '--ci', c.ci];
+  const args = ['gen', name, '--pm', c.pm, '--reporter', c.reporter, '--ci', c.ci];
   if (c.lang === 'js') args.push('--js');
   if (c.husky === false) args.push('--no-husky');
   // non-interactive

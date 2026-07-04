@@ -35,6 +35,7 @@ program
 // operate in both interactive and non-interactive modes (CI / automation).
 program
   .command('gen')
+  .alias('init')
   .description('Generate a Playwright test framework project')
   .argument('<project-name>', 'folder to create')
   .option('-y, --yes', 'Use defaults and skip prompts', false)
