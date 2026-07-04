@@ -1,0 +1,4 @@
+# Run code formatting
+npm run prettier-fix
+# Run syntax/type checking
+npm run check
