@@ -1,10 +1,13 @@
-  <% if (preset === 'web' || preset === 'hybrid') { %>
+/* eslint-disable @typescript-eslint/no-unused-vars */
+<% if (preset === 'web' || preset === 'hybrid') { %>
 import fs from 'fs';
-import { resolve } from 'path';
 <% } %>
+import path from 'path';
+import { rimraf } from 'rimraf';
+import waitOn from 'wait-on';
 
 import { <% if (preset === 'web' || preset === 'hybrid' ) { %>chromium, expect, <% } %> FullConfig} from '@playwright/test';
-import { <% if (preset === 'web' || preset === 'hybrid' ) { %>ARTIFACTS_DIR,<% } %> logger } from '@utils';
+import { logger, PROJECT_ROOT } from '@utils';
 
 /**
  * Global Setup - runs once before all tests.
@@ -14,9 +17,17 @@ export default async function globalSetup(config: FullConfig) {
   logger.info('🔧 Global Setup: initializing test environment...');
 
   // Example: log the base URL and environment
-  const baseURL = config.projects[0].use?.baseURL;
+  const baseURL = <% if (preset === 'web' || preset === 'hybrid') { %>process.env.APP_BASE_URL<% } else { %>process.env.API_BASE_URL<% } %>;
   logger.info(`Base URL: ${baseURL || 'not defined'}`);
-  logger.info(`Environment: ${process.env.ENV || 'dev'}`);
+  logger.info(`Environment: ${process.env.NODE_ENV || 'not defined'}`);
+
+  <% if (preset === 'api') { %>
+    // Wait for web server to be ready before running API tests
+    await waitOn({
+      resources: [`${baseURL}/health`],
+      timeout: 30000, // 30 seconds
+    });
+  <% } %>
 
   <% if (preset === 'web' || preset === 'hybrid' ) { %>
   // Example: load or generate tokens, cookies, etc.
@@ -50,7 +61,7 @@ const setUpUsersCookies = async () => {
 
   for (const user of users) {
     const cookiesFileName = `${user.userName}_cookies.json`;
-    const storageStateFilePath = resolve(ARTIFACTS_DIR, `cookies/${cookiesFileName}`);
+    const storageStateFilePath = path.join(PROJECT_ROOT, 'artifacts', 'cookies', cookiesFileName);
     if (fs.existsSync(storageStateFilePath)) {
       logger.info(
         `The storage state file already exists, hence no need to overwrite - ${storageStateFilePath}`,

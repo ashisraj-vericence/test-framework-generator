@@ -19,12 +19,14 @@ jobs:
         run: npm run check
       - name: Check formatting (Prettier)
         run: |
-          npm run fmt
-          git diff --exit-code || (echo "Prettier changed files; run 'npm run fmt' and commit." && exit 1)
+          npm run prettier-fix
+          git diff --exit-code || (echo "Prettier changed files; run 'npm run prettier-fix' and commit." && exit 1)
+      <% if (['web', 'hybrid'].includes(preset)) { %>
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
+      <% } %>
       - name: Run Playwright tests
-        run: npm run test:runner
+        run: npm run test:runner:dev
       <% if (reporter === "html") { %>
       - name: Upload test artifacts
         uses: actions/upload-artifact@v4

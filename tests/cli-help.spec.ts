@@ -34,7 +34,7 @@ describe('CLI help', () => {
     expect(out).toMatch(/Test reporter \(html\|allure\|monocart\|tta\)/i);
     expect(out).toMatch(/\(default:\s+"allure"\)/i);
     expect(out).toMatch(
-      /--notifications <channels...>\s+Notifications \(email,slack,teams\) \(default:\s+true\)/i,
+      /--notifications <value> \s+Include notifications \(true\/false\) \(default:\s+"true"\)/i,
     );
     expect(out).toMatch(/--zephyr\s+Include Zephyr results stub \(default: false\)/i);
     expect(out).toMatch(/--no-husky\s+Skip Husky hooks/i);

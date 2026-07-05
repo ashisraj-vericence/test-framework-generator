@@ -94,7 +94,7 @@ export async function askQuestions(
     packageManager: flags.pm === 'yarn' ? 'yarn' : 'npm',
     ci: flags.ci,
     reporter: flags.reporter,
-    notifications: flags.notifications ?? true,
+    notifications: flags.notifications === 'false' || flags.notifications === false ? false : true,
     // Accept `--no-husky` by checking !== false
     husky: flags.husky !== false,
     zephyr: !!flags.zephyr,

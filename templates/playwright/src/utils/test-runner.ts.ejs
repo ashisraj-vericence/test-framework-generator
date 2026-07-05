@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getEnv, loadDotenvIfPresent, logger, PROJECT_ROOT } from '@utils';
+import getConfig from '@configs';
+import { logger, PROJECT_ROOT } from '@utils';
 import { execSync } from 'child_process';
 import { Command } from 'commander';
 
 import { join } from 'path';
 
-const envKey = getEnv();
-loadDotenvIfPresent(envKey);
+// Loading .env and configs files for the current environment
+const config = getConfig();
 
 const NPX = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 
@@ -27,9 +28,9 @@ const program = new Command()
   .option(
     '--reporter <name>',
     'Override reporter (monocart|allure|html)',
-    process.env.DEFAULT_REPORTER ?? 'monocart',
+    config.dotEnv!['DEFAULT_REPORTER'],
   )
-  .option('--project <name>', 'Run a specific project (e.g., chromium)', 'chromium')
+  .option('--project <name>', 'Run a specific project (e.g., chromium)', <% ['web', 'hybrid'].includes(preset) ? 'chromium' : '' %>)
   .option('--grep <re>', 'Grep by RegExp', '')
   .option('--ui', 'Run Playwright UI mode', false)
   .option('--headed', 'Headed mode', false)
@@ -41,7 +42,7 @@ const program = new Command()
 program.parse(process.argv);
 const opts = program.opts();
 
-const pwArgs = [`cross-env ENV=${opts.env}`, 'playwright', 'test', '--config', opts.config];
+const pwArgs = [`cross-env NODE_ENV=${opts.env}`, 'playwright', 'test', '--config', opts.config];
 if (opts.project) pwArgs.push('--project', opts.project);
 if (opts.grep) pwArgs.push('--grep', opts.grep);
 if (opts.ui) pwArgs.push('--ui');

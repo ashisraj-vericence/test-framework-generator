@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { PROJECT_ROOT } from './paths';
 
-import dotenv from 'dotenv';
+import dotenvFlow from 'dotenv-flow';
 import { logger } from './logger';
 import { MetadataBuilder } from './metadata-builder';
 
@@ -12,24 +12,23 @@ export const runId = () => {
   return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
 };
 
-export const loadDotenvIfPresent = (env: string) => {
+export const loadDotenvIfPresent = () => {
   try {
-    const envFile = path.join(PROJECT_ROOT, 'src', 'environments', `.env.${env}`);
+    const envFile = path.join(PROJECT_ROOT, 'src', 'environments');
     if (fs.existsSync(envFile)) {
-      dotenv.config({ path: envFile });
-      return envFile;
+      return dotenvFlow.config({ path: envFile });
     }
     return undefined;
   } catch (e) {
-    logger.warn(`Error loading .env file for environment ${env}:`, e);
+    logger.warn(`Error loading .env file for environment:`, e);
   }
   return undefined;
 };
 
 export type EnvKey = 'dev' | 'qa' | 'staging';
 
-export const getEnv = (env?: string) => {
-  const rawEnv = (env || process.env.PLAYWRIGHT_ENV || process.env.ENV || 'dev').toLowerCase();
+export const getEnv = () => {
+  const rawEnv = (process.env.NODE_ENV || 'dev').toLowerCase();
   const key = (['dev', 'qa', 'staging'].includes(rawEnv) ? rawEnv : 'dev') as EnvKey;
   return key;
 };
@@ -42,9 +41,9 @@ export const reportMetaData = () => {
   return new MetadataBuilder()
     .addBase({
       // injected by generator
-      project: process.env.PROJECT_NAME || 'Playwright BDD Framework',
-      preset: 'bdd',
-      ci: 'github',
+      project: process.env.PROJECT_NAME,
+      preset: '<%= preset %>',
+      ci: '<%= ci %>',
       reporter: process.env.DEFAULT_REPORTER,
       language: 'ts',
       env: process.env.ENV || 'dev',

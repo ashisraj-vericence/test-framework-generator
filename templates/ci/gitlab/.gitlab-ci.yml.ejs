@@ -7,7 +7,7 @@ playwright:
     - npm run check
     - npm run prettier-fix
     - git diff --exit-code || (echo "Prettier changed files; run 'npm run prettier-fix' and commit." && exit 1)
-    - npm test
+    - npm run test:runner:dev
   artifacts:
     when: always
     paths:
@@ -15,4 +15,6 @@ playwright:
       - artifacts/reports/monocart-report
     <% } else if (reporter === "allure") { %>
       - artifacts/reports/allure-results/
+    <% } else if (reporter === "html") { %>
+      - artifacts/reports/html-reports/
     <% } %>

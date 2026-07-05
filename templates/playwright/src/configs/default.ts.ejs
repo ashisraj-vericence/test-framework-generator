@@ -13,8 +13,7 @@ const metaData = reportMetaData();
 const defaultConfig: FrameworkConfig = {
   envName: 'dev',
   baseURL: 'https://www.saucedemo.com/',
-  APP_BASE_URL: 'https://www.saucedemo.com/',
-  API_BASE_URL: 'http://localhost:3000',
+  apiBaseURL: 'http://localhost:3000',
   timeout: 90000,
   expectTimeout: 10000,
 
@@ -182,6 +181,7 @@ const defaultConfig: FrameworkConfig = {
     <% } %>
   ],
   reportDir: path.join(PROJECT_ROOT, 'artifacts', 'reports'),
+  <% if (preset === 'web' || preset === 'hybrid') { %>
   projects: [
     {
       name: 'chromium',
@@ -190,6 +190,7 @@ const defaultConfig: FrameworkConfig = {
       navigationTimeout: 0,
     },
   ],
+  <% } %>
   actionTimeout: 0,
   navigationTimeout: 0,
   // Default Playwright runner options

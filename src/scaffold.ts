@@ -17,7 +17,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ora from 'ora';
-import { copyDir, renderAndCopyDir, writeJSON } from './files.js';
+import { copyDir, ensureDir, renderAndCopyDir, writeJSON } from './files.js';
 import type { Answers } from './prompts.js';
 
 // Determine __dirname in ESM (fileURLToPath is the portable approach)
@@ -329,6 +329,7 @@ export async function scaffold(a: Answers) {
       'eslint-plugin-jsonc': '^2.20.0',
       'adm-zip': '^0.5.16',
       '@types/adm-zip': '^0.5.7',
+      '@types/wait-on': '^5.3.4',
       '@types/lodash': '^4.17.24',
       eslint: '^9.36.0',
       '@eslint/js': '^9.36.0',
@@ -348,6 +349,8 @@ export async function scaffold(a: Answers) {
       'winston-daily-rotate-file': '^5.0.0',
       kolorist: '^1.8.0',
       'http-server': '14.1.1',
+      'wait-on': '^9.0.10',
+      'dotenv-flow': '^4.1.0',
     };
 
     const conditionalDevDeps = merge({
@@ -361,8 +364,8 @@ export async function scaffold(a: Answers) {
             'cross-fetch': '^3.1.5',
           }
         : {}),
-      // Reporter: Allure (unless Monocart was selected)
-      ...(a.reporter !== 'monocart'
+      // Reporter: Allure (only when specifically chosen)
+      ...(a.reporter === 'allure'
         ? {
             'allure-playwright': '^3.2.1',
             'allure-commandline': '^2.34.1',
@@ -506,6 +509,7 @@ export const legacyConversionPlaceholder = {
         'utf8',
       );
 
+      await ensureDir(path.join(dest, 'src', 'agents'));
       await fs.writeFile(
         path.join(dest, 'src', 'agents', 'conversion-agent.ts'),
         `/**

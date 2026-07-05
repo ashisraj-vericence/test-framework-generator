@@ -3,6 +3,7 @@
     "ms-playwright.playwright",
     "editorconfig.editorconfig",
     "esbenp.prettier-vscode",
-    "dbaeumer.vscode-eslint"
+    "dbaeumer.vscode-eslint",
+    "pkief.material-icon-theme"
   ]
 }

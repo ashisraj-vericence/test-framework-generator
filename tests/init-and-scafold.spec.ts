@@ -45,9 +45,10 @@ describe('scaffold: package manager and script validation', () => {
       const root = path.join(tmp, name);
       const pkg = readJSON(path.join(root, 'package.json'));
       // Core scripts must exist
-      expect(pkg.scripts.test).toMatch(/playwright test/);
-      expect(pkg.scripts['test:ui']).toMatch(/playwright test --ui/);
-      expect(pkg.scripts['test:headed']).toMatch(/playwright test --headed/);
+      expect(pkg.scripts['test:dev']).toMatch(
+        `npx cross-env NODE_ENV=dev playwright test --grep @regression`,
+      );
+      expect(pkg.scripts['test:dev:ui']).toMatch(`npx cross-env NODE_ENV=dev playwright test --ui`);
       expect(Object.keys(pkg.scripts)).toContain('run-and-notify');
     }
   });
@@ -69,9 +70,10 @@ function expectScripts(pkg: any, c: any) {
   const xenv = `${pmBin} cross-env`;
 
   // core test scripts
-  expect(pkg.scripts.test).toMatch(`playwright test`);
-  expect(pkg.scripts['test:ui']).toMatch(`playwright test --ui`);
-  expect(pkg.scripts['test:headed']).toMatch(`playwright test --headed`);
+  expect(pkg.scripts['test:dev']).toMatch(
+    `npx cross-env NODE_ENV=dev playwright test --grep @regression`,
+  );
+  expect(pkg.scripts['test:dev:ui']).toMatch(`npx cross-env NODE_ENV=dev playwright test --ui`);
 
   if (c.reporter === 'allure') {
     // cross-env should be prefixed by pmBin
@@ -151,6 +153,35 @@ function expectFiles(root: string, c: any) {
   expect(exists(path.join(root, 'src', 'utils', 'custom-reporter.ts'))).toBe(true);
 }
 
+it('renders shared env variables once for hybrid presets', async () => {
+  const tmp = makeTmpDir();
+  const name = 'proj-env-hybrid';
+  const { out, exitCode } = await runCLI(tmp, 'node', [
+    distEntry,
+    'gen',
+    name,
+    '--preset',
+    'hybrid',
+    '--pm',
+    'npm',
+    '--reporter',
+    'allure',
+    '--ci',
+    'github',
+    '-y',
+  ]);
+
+  expect(exitCode).toBe(0);
+  expect(out).toMatch(/Create project folder/i);
+
+  const env = read(path.join(tmp, name, 'src', 'environments', '.env'));
+  const apiBaseUrlLines = env.match(/^API_BASE_URL=.*$/gm) ?? [];
+
+  expect(apiBaseUrlLines).toHaveLength(1);
+  expect(env).toContain('USE_MOCK_APOLLO=true');
+  expect(env).toContain('CALC_SOAP_WSDL_URL=');
+});
+
 describe('init (matrix)', async () => {
   const cases = [
     // minimal TS + npm + allure + playwright + github + husky on
@@ -201,7 +232,9 @@ describe('init (matrix)', async () => {
     it(`scaffolds: ${c.id}`, async () => {
       const tmp = makeTmpDir();
       const name = `proj-${c.id}`;
-      const { out, exitCode } = await runCLI(tmp, 'node', [distEntry, ...toArgs(name, c)]);
+      const args = toArgs(name, c);
+      console.log(`Running CLI with args: ${args.join(' ')}`);
+      const { out, exitCode } = await runCLI(tmp, 'node', [distEntry, ...args]);
 
       expect(exitCode).toBe(0);
       expect(out).toMatch(/Create project folder/i);
@@ -253,4 +286,323 @@ describe('init (matrix)', async () => {
       expect(res.out).toMatch(/eslint . --fix --max-warnings 0 --no-cache/);
     }, 120_000);
   }
+});
+
+describe('Script commands comprehensive validation', () => {
+  it('all core test scripts exist for playwright framework', async () => {
+    const tmp = makeTmpDir();
+    const name = 'proj-scripts-core';
+    const { exitCode } = await runCLI(tmp, 'node', [
+      distEntry,
+      'gen',
+      name,
+      '--pm',
+      'npm',
+      '--framework',
+      'playwright',
+      '-y',
+    ]);
+    expect(exitCode).toBe(0);
+
+    const root = path.join(tmp, name);
+    const pkg = readJSON(path.join(root, 'package.json'));
+
+    // Core scripts must exist
+    const coreScripts = [
+      'test:runner:dev',
+      'test:runner:ui:dev',
+      'test:dev',
+      'test:dev:ui',
+      'check',
+      'typecheck',
+      'lint',
+      'prettier-fix',
+      'logs:clean',
+      'reports:clean',
+    ];
+
+    for (const script of coreScripts) {
+      expect(pkg.scripts[script]).toBeTruthy();
+    }
+
+    // No bddPrefix for regular playwright
+    expect(pkg.scripts['test:dev']).not.toMatch(/npx bddgen/);
+  }, 60_000);
+
+  it('bdd scripts include bddPrefix (npx bddgen &&)', async () => {
+    const tmp = makeTmpDir();
+    const name = 'proj-scripts-bdd';
+    const { exitCode } = await runCLI(tmp, 'node', [
+      distEntry,
+      'gen',
+      name,
+      '--pm',
+      'npm',
+      '--framework',
+      'playwright-bdd',
+      '-y',
+    ]);
+    expect(exitCode).toBe(0);
+
+    const root = path.join(tmp, name);
+    const pkg = readJSON(path.join(root, 'package.json'));
+
+    // BDD scripts must have bddPrefix
+    expect(pkg.scripts['test:runner:dev']).toMatch(/npx bddgen &&/);
+    expect(pkg.scripts['test:runner:ui:dev']).toMatch(/npx bddgen &&/);
+    expect(pkg.scripts['test:dev']).toMatch(/npx bddgen &&/);
+    expect(pkg.scripts['test:dev:ui']).toMatch(/npx bddgen &&/);
+
+    // gherkin-lint script for BDD only
+    expect(pkg.scripts['lint:gherkin']).toBeTruthy();
+    expect(pkg.scripts['lint:gherkin']).toMatch(/gherkin-lint/);
+  }, 60_000);
+
+  it('allure reporter scripts are correct for npm', async () => {
+    const tmp = makeTmpDir();
+    const name = 'proj-scripts-allure-npm';
+    const { exitCode } = await runCLI(tmp, 'node', [
+      distEntry,
+      'gen',
+      name,
+      '--pm',
+      'npm',
+      '--reporter',
+      'allure',
+      '-y',
+    ]);
+    expect(exitCode).toBe(0);
+
+    const root = path.join(tmp, name);
+    const pkg = readJSON(path.join(root, 'package.json'));
+
+    expect(pkg.scripts['allure:report:generate']).toMatch(/npx cross-env/);
+    expect(pkg.scripts['allure:report:generate']).toMatch(/ALLURE_NO_ANALYTICS=1/);
+    expect(pkg.scripts['allure:report:generate']).toMatch(/allure generate/);
+    expect(pkg.scripts['allure:report:show']).toMatch(/allure open/);
+    expect(pkg.scripts['allure:report:open']).toMatch(/npm run allure:report:generate/);
+  }, 60_000);
+
+  it('allure reporter scripts use yarn prefix with yarn package manager', async () => {
+    const tmp = makeTmpDir();
+    const name = 'proj-scripts-allure-yarn';
+    const { exitCode } = await runCLI(tmp, 'node', [
+      distEntry,
+      'gen',
+      name,
+      '--pm',
+      'yarn',
+      '--reporter',
+      'allure',
+      '-y',
+    ]);
+    expect(exitCode).toBe(0);
+
+    const root = path.join(tmp, name);
+    const pkg = readJSON(path.join(root, 'package.json'));
+
+    expect(pkg.scripts['allure:report:generate']).toMatch(/yarn cross-env/);
+    expect(pkg.scripts['allure:report:show']).toMatch(/yarn cross-env/);
+  }, 60_000);
+
+  it('monocart reporter scripts are correct for npm and yarn', async () => {
+    for (const pm of ['npm', 'yarn']) {
+      const tmp = makeTmpDir();
+      const name = `proj-scripts-monocart-${pm}`;
+      const { exitCode } = await runCLI(tmp, 'node', [
+        distEntry,
+        'gen',
+        name,
+        '--pm',
+        pm,
+        '--reporter',
+        'monocart',
+        '-y',
+      ]);
+      expect(exitCode).toBe(0);
+
+      const root = path.join(tmp, name);
+      const pkg = readJSON(path.join(root, 'package.json'));
+
+      const pmBin = pm === 'yarn' ? 'yarn' : 'npx';
+      expect(pkg.scripts['monocart:report:open']).toMatch(`${pmBin} monocart show-report`);
+      expect(pkg.scripts['monocart:report:open']).toMatch(/monocart-report/);
+    }
+  }, 120_000);
+
+  it('html reporter scripts are correct for npm and yarn', async () => {
+    for (const pm of ['npm', 'yarn']) {
+      const tmp = makeTmpDir();
+      const name = `proj-scripts-html-${pm}`;
+      const { exitCode } = await runCLI(tmp, 'node', [
+        distEntry,
+        'gen',
+        name,
+        '--pm',
+        pm,
+        '--reporter',
+        'html',
+        '-y',
+      ]);
+      expect(exitCode).toBe(0);
+
+      const root = path.join(tmp, name);
+      const pkg = readJSON(path.join(root, 'package.json'));
+
+      const pmBin = pm === 'yarn' ? 'yarn' : 'npx';
+      expect(pkg.scripts['html:report:open']).toMatch(`${pmBin} playwright show-report`);
+      expect(pkg.scripts['html:report:open']).toMatch(/html-reports/);
+    }
+  }, 120_000);
+
+  it('tta reporter scripts are correct', async () => {
+    for (const pm of ['npm', 'yarn']) {
+      const tmp = makeTmpDir();
+      const name = `proj-scripts-tta-${pm}`;
+      const { exitCode } = await runCLI(tmp, 'node', [
+        distEntry,
+        'gen',
+        name,
+        '--pm',
+        pm,
+        '--reporter',
+        'tta',
+        '-y',
+      ]);
+      expect(exitCode).toBe(0);
+
+      const root = path.join(tmp, name);
+      const pkg = readJSON(path.join(root, 'package.json'));
+
+      const pmBin = pm === 'yarn' ? 'yarn' : 'npx';
+      expect(pkg.scripts['tta:report:open']).toMatch(`${pmBin} http-server`);
+      expect(pkg.scripts['tta:report:open']).toMatch(/tta-report/);
+      expect(pkg.scripts['tta:report:open']).toMatch(/-c-1/);
+    }
+  }, 120_000);
+
+  it('notifications scripts added only when enabled', async () => {
+    // Test with notifications enabled (default)
+    const tmp1 = makeTmpDir();
+    const name1 = 'proj-notify-on';
+    const { exitCode: exitCode1 } = await runCLI(tmp1, 'node', [
+      distEntry,
+      'gen',
+      name1,
+      '--pm',
+      'npm',
+      '-y',
+    ]);
+    expect(exitCode1).toBe(0);
+
+    const root1 = path.join(tmp1, name1);
+    const pkg1 = readJSON(path.join(root1, 'package.json'));
+
+    expect(pkg1.scripts['notify-report']).toBeTruthy();
+    expect(pkg1.scripts['run-and-notify']).toBeTruthy();
+
+    // Test with notifications disabled
+    const tmp2 = makeTmpDir();
+    const name2 = 'proj-notify-off';
+    const { exitCode: exitCode2 } = await runCLI(tmp2, 'node', [
+      distEntry,
+      'gen',
+      name2,
+      '--pm',
+      'npm',
+      '--notifications',
+      'false',
+      '-y',
+    ]);
+    expect(exitCode2).toBe(0);
+
+    const root2 = path.join(tmp2, name2);
+    const pkg2 = readJSON(path.join(root2, 'package.json'));
+
+    expect(pkg2.scripts['notify-report']).toBeFalsy();
+    expect(pkg2.scripts['run-and-notify']).toBeFalsy();
+  }, 120_000);
+
+  it('api/hybrid preset includes start script', async () => {
+    for (const preset of ['api', 'hybrid']) {
+      const tmp = makeTmpDir();
+      const name = `proj-scripts-start-${preset}`;
+      const { exitCode } = await runCLI(tmp, 'node', [
+        distEntry,
+        'gen',
+        name,
+        '--pm',
+        'npm',
+        '--preset',
+        preset,
+        '-y',
+      ]);
+      expect(exitCode).toBe(0);
+
+      const root = path.join(tmp, name);
+      const pkg = readJSON(path.join(root, 'package.json'));
+
+      expect(pkg.scripts.start).toBeTruthy();
+      expect(pkg.scripts.start).toMatch(/ts-node/);
+      expect(pkg.scripts.start).toMatch(/src\/utils\/server\.ts/);
+    }
+  }, 120_000);
+
+  it('web/soap presets do not include start script', async () => {
+    for (const preset of ['web', 'soap']) {
+      const tmp = makeTmpDir();
+      const name = `proj-no-start-${preset}`;
+      const { exitCode } = await runCLI(tmp, 'node', [
+        distEntry,
+        'gen',
+        name,
+        '--pm',
+        'npm',
+        '--preset',
+        preset,
+        '-y',
+      ]);
+      expect(exitCode).toBe(0);
+
+      const root = path.join(tmp, name);
+      const pkg = readJSON(path.join(root, 'package.json'));
+
+      expect(pkg.scripts.start).toBeFalsy();
+    }
+  }, 120_000);
+
+  it('husky wiring (--no-husky is a flag) adds prepare script and lint-staged', async () => {
+    const tmp = makeTmpDir();
+    const name = 'proj-husky-on';
+    const { exitCode } = await runCLI(tmp, 'node', [distEntry, 'gen', name, '--pm', 'npm', '-y']);
+    expect(exitCode).toBe(0);
+
+    const root = path.join(tmp, name);
+    const pkg = readJSON(path.join(root, 'package.json'));
+
+    expect(pkg.scripts.prepare).toBe('husky');
+    expect(pkg['lint-staged']).toBeTruthy();
+    expect(pkg['lint-staged']['*.{ts,js}']).toBeTruthy();
+  }, 60_000);
+
+  it('no-husky removes prepare script and lint-staged', async () => {
+    const tmp = makeTmpDir();
+    const name = 'proj-husky-off';
+    const { exitCode } = await runCLI(tmp, 'node', [
+      distEntry,
+      'gen',
+      name,
+      '--pm',
+      'npm',
+      '--no-husky',
+      '-y',
+    ]);
+    expect(exitCode).toBe(0);
+
+    const root = path.join(tmp, name);
+    const pkg = readJSON(path.join(root, 'package.json'));
+
+    expect(pkg.scripts.prepare).toBeFalsy();
+    expect(pkg['lint-staged']).toBeFalsy();
+  }, 60_000);
 });

@@ -12,12 +12,12 @@ export interface ProjectConfig {
 }
 
 export interface FrameworkConfig {
+  projectName?: string;
   // logical environment name (local, qa, staging)
   envName: string;
   // full base URL for tests
   baseURL: string;
-  APP_BASE_URL: string;
-  API_BASE_URL: string;
+  apiBaseURL: string;
   // default test timeout in ms
   timeout: number;
   // expect timeout in ms
@@ -27,12 +27,12 @@ export interface FrameworkConfig {
   // directory for reporter results
   reportDir: string;
   // projects (browsers) config
-  projects: ProjectConfig[];
+  projects?: ProjectConfig[];
   // per-project action/navigation timeouts (fallback)
   actionTimeout?: number | 0;
   navigationTimeout?: number | 0;
   // optional dotenv filename that was loaded
-  dotenvFile?: string;
+  dotEnv?: Record<string, any>;
   // Playwright runner options (allow env-specific overrides)
   fullyParallel?: boolean;
   forbidOnly?: boolean;

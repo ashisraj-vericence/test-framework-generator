@@ -1,20 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import getConfig from '@configs';
-import { defineConfig, devices } from '@playwright/test';
-import { getEnv, PROJECT_ROOT, reportMetaData } from '@utils';
+import { defineConfig <% if (preset === 'web' || preset === 'hybrid') { %>, devices <% } %>} from '@playwright/test';
+import { PROJECT_ROOT, reportMetaData } from '@utils';
 import path from 'path';
 <% if (framework === "playwright-bdd") { %>
 import { defineBddConfig } from 'playwright-bdd';
 <% } %>
 
-const env = getEnv();
-
-const metaData = reportMetaData();
-
 // reads src/configs/<env>.ts when present). Default: dev.ts
 // also supports loading .env files (e.g. .env.qa for 'qa' env)
 // and merges with config.ts values
-const cfg = getConfig(env);
+const cfg = getConfig();
+
+const metaData = reportMetaData();
 
 <% if (framework === "playwright-bdd") { %>
 // Playwright BDD Test configuration
@@ -78,9 +76,10 @@ export default defineConfig({
   // Use a dedicated subfolder to avoid clashes with reporter output folders
   outputDir: path.join(PROJECT_ROOT, 'artifacts', 'reports', 'playwright-results'),
 
+  <% if (['web', 'hybrid'].includes(preset)) { %>
   // Browsers
   projects: [
-    ...cfg.projects.map((p) => ({
+    ...(cfg.projects ?? []).map((p) => ({
       name: p.name,
       use: {
         globalConfig: cfg,
@@ -97,6 +96,7 @@ export default defineConfig({
       metadata: metaData,
     })),
   ],
+  <% } %>
   <% if (['api', 'hybrid'].includes(preset)) { %>
   webServer: {
     command: 'npm start',
