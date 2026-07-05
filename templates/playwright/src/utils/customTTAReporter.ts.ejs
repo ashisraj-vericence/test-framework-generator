@@ -265,7 +265,7 @@ class CustomTTAReporter implements Reporter {
 
       if (attachment.name === 'trace' && attachment.path) {
         const traceName = `trace_${this.testCounter}.zip`;
-        const destPath = path.join('tta-report', 'traces', traceName);
+        const destPath = path.join(PROJECT_ROOT, 'artifacts', 'reports', 'tta-report', 'traces', traceName);
         const destDir = path.dirname(destPath);
         if (!fs.existsSync(destDir)) {
           fs.mkdirSync(destDir, { recursive: true });
