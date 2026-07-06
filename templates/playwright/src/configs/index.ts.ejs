@@ -12,12 +12,12 @@ export function getConfig(): FrameworkConfig {
   const dotEnvParsed: Partial<DotenvFlowParseResult | undefined> = dotEnv?.parsed || {};
 
   const partials: Partial<FrameworkConfig> =
-    dotEnvParsed!['ENV'] === 'qa' ? qaConfig : dotEnvParsed!['ENV'] === 'stage' ? stagingConfig : localConfig;
+    process.env.ENV === 'qa' ? qaConfig : process.env.ENV === 'stage' ? stagingConfig : localConfig;
 
   const merged: FrameworkConfig = {
     ...defaultConfig,
     ...partials,
-    envName: dotEnvParsed!['ENV'],
+    envName: process.env.ENV,
     dotEnv: dotEnvParsed,
   } as FrameworkConfig;
 
