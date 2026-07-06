@@ -26,19 +26,9 @@ export default async function globalSetup(config: FullConfig) {
     // Copy the Allure executor.json file to the expected location for Allure reporting
     const srcDir = path.join(PROJECT_ROOT, 'src', 'configs', 'executor.json');
     const destDir = path.join(PROJECT_ROOT, 'artifacts', 'reports', 'allure-results', 'executor.json');
+    ensureDir(path.dirname(destDir));
     fs.copyFileSync(srcDir, destDir);
   <% } %>
-
-  const srcDir = path.join(PROJECT_ROOT, 'src', 'configs', 'executor.json');
-  const destDir = path.join(
-    PROJECT_ROOT,
-    'artifacts',
-    'reports',
-    'allure-results',
-    'executor.json',
-  );
-  ensureDir(path.dirname(destDir));
-  fs.copyFileSync(srcDir, destDir);
 
   <% if (preset === 'api' || preset === 'hybrid') { %>
     // Wait for web server to be ready before running API tests
