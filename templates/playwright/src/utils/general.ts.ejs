@@ -6,6 +6,15 @@ import dotenvFlow from 'dotenv-flow';
 import { logger } from './logger';
 import { MetadataBuilder } from './metadata-builder';
 
+/**
+ * Ensure directory exists
+ * @param p The path to the directory
+ * @returns --- IGNORE ---
+ */
+export function ensureDir(p: string) {
+  fs.mkdirSync(p, { recursive: true });
+}
+
 // Utility function to generate a unique run ID based on the current timestamp
 export const runId = () => {
   const now = new Date();
@@ -28,7 +37,7 @@ export const loadDotenvIfPresent = () => {
 export type EnvKey = 'dev' | 'qa' | 'staging';
 
 export const getEnv = () => {
-  const rawEnv = (process.env.NODE_ENV || 'dev').toLowerCase();
+  const rawEnv = (process.env.NODE_ENV || 'not-defined').toLowerCase();
   const key = (['dev', 'qa', 'staging'].includes(rawEnv) ? rawEnv : 'dev') as EnvKey;
   return key;
 };
@@ -46,7 +55,7 @@ export const reportMetaData = () => {
       ci: '<%= ci %>',
       reporter: process.env.DEFAULT_REPORTER,
       language: 'ts',
-      env: process.env.ENV || 'dev',
+      env: process.env.NODE_ENV || 'not-defined',
     })
     .build();
 };

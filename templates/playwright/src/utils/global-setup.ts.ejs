@@ -3,11 +3,12 @@
 import fs from 'fs';
 <% } %>
 import path from 'path';
-import { rimraf } from 'rimraf';
+<% if (preset === 'api' || preset === 'hybrid') { %>
 import waitOn from 'wait-on';
+<% } %>
 
 import { <% if (preset === 'web' || preset === 'hybrid' ) { %>chromium, expect, <% } %> FullConfig} from '@playwright/test';
-import { logger, PROJECT_ROOT } from '@utils';
+import { ensureDir, logger, PROJECT_ROOT } from '@utils';
 
 /**
  * Global Setup - runs once before all tests.
@@ -21,11 +22,31 @@ export default async function globalSetup(config: FullConfig) {
   logger.info(`Base URL: ${baseURL || 'not defined'}`);
   logger.info(`Environment: ${process.env.NODE_ENV || 'not defined'}`);
 
-  <% if (preset === 'api') { %>
+  <% if (reporter === 'allure') { %>
+    // Copy the Allure executor.json file to the expected location for Allure reporting
+    const srcDir = path.join(PROJECT_ROOT, 'src', 'configs', 'executor.json');
+    const destDir = path.join(PROJECT_ROOT, 'artifacts', 'reports', 'allure-results', 'executor.json');
+    fs.copyFileSync(srcDir, destDir);
+  <% } %>
+
+  const srcDir = path.join(PROJECT_ROOT, 'src', 'configs', 'executor.json');
+  const destDir = path.join(
+    PROJECT_ROOT,
+    'artifacts',
+    'reports',
+    'allure-results',
+    'executor.json',
+  );
+  ensureDir(path.dirname(destDir));
+  fs.copyFileSync(srcDir, destDir);
+
+  <% if (preset === 'api' || preset === 'hybrid') { %>
     // Wait for web server to be ready before running API tests
     await waitOn({
-      resources: [`${baseURL}/health`],
+      resources: [`${process.env.API_BASE_URL}/health`],
       timeout: 30000, // 30 seconds
+    }).catch((error) => {
+      logger.warn('Error waiting for the web server to be ready');
     });
   <% } %>
 

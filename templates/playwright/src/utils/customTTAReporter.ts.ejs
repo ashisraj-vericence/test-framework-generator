@@ -57,7 +57,7 @@ class CustomTTAReporter implements Reporter {
       '🎭 TTA PLAYWRIGHT AUTOMATION - REAL-TIME REPORT',
       `📅 Started: ${this.formatTime(this.startTime)}`,
       `📊 Total Tests: ${String(totalTests)}`,
-      `🌐 Environment: ${process.env.ENV || 'UAT'}`,
+      `🌐 Environment: ${process.env.NODE_ENV || 'not defined'}`,
     ]);
 
     this.initializeLiveReport();
