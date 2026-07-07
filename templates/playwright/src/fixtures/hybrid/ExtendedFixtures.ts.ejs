@@ -160,8 +160,7 @@ const testBase = baseTest.extend<Fixtures>({
 
     const uri =
       apolloClientOptions?.uri ||
-      process.env.APOLLO_GRAPHQL_ENDPOINT ||
-      'https://apollo-fullstack-tutorial.herokuapp.com/graphql';
+      process.env.APOLLO_GRAPHQL_ENDPOINT!;
     const client = new ApolloClient(uri, apolloClientOptions?.headers);
     await use(client);
     await client.dispose();

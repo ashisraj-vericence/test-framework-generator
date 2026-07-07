@@ -1,11 +1,11 @@
 export const countryInfoSoapData = {
   capitalCity: {
-    url: 'http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso',
+    url: process.env.COUNTRY_SOAP_WSDL_URL!,
     headers: {
       'Content-Type': 'text/xml; charset=utf-8',
     },
     soapAction:
-      'http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso/CapitalCity',
+      `${process.env.COUNTRY_SOAP_WSDL_URL!}/CapitalCity`,
     body: `
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
@@ -19,12 +19,12 @@ export const countryInfoSoapData = {
     responsePath: 'Envelope.Body.CapitalCityResponse.CapitalCityResult',
   },
   countryName: {
-    url: 'http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso',
+    url: process.env.COUNTRY_SOAP_WSDL_URL!,
     headers: {
       'Content-Type': 'text/xml; charset=utf-8',
     },
     soapAction:
-      'http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso/CountryName',
+      `${process.env.COUNTRY_SOAP_WSDL_URL!}/CountryName`,
     body: `
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope">

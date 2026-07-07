@@ -1,10 +1,10 @@
 export const numberConversionSoapData = {
   numberToWords: {
-    url: 'https://www.dataaccess.com/webservicesserver/NumberConversion.wso',
+    url: process.env.NUMBER_CONVERSION_SOAP_WSDL_URL!,
     headers: {
       'Content-Type': 'text/xml; charset=utf-8',
     },
-    soapAction: 'https://www.dataaccess.com/webservicesserver/NumberConversion.wso/NumberToWords',
+    soapAction: `${process.env.NUMBER_CONVERSION_SOAP_WSDL_URL!}/NumberToWords`,
     body: `
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
@@ -18,11 +18,11 @@ export const numberConversionSoapData = {
     responsePath: 'Envelope.Body.NumberToWordsResponse.NumberToWordsResult',
   },
   numberToDollars: {
-    url: 'https://www.dataaccess.com/webservicesserver/NumberConversion.wso',
+    url: process.env.NUMBER_CONVERSION_SOAP_WSDL_URL!,
     headers: {
       'Content-Type': 'text/xml; charset=utf-8',
     },
-    soapAction: 'https://www.dataaccess.com/webservicesserver/NumberConversion.wso/NumberToDollars',
+    soapAction: `${process.env.NUMBER_CONVERSION_SOAP_WSDL_URL!}/NumberToDollars`,
     body: `
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope">

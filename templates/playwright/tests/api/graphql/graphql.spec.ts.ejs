@@ -1,7 +1,5 @@
 import { expect, test } from '@fixtures';
 
-const GRAPHQL_ENDPOINT = 'https://graphqlzero.almansi.me/api';
-
 test(
   'graphql query example',
   { tag: ['@api', '@graphql', '@regression'] },
@@ -13,7 +11,7 @@ test(
     };
 
     await test.step('Send GraphQL request', async () => {
-      response = await apiService.queryCountry('https://countries.trevorblades.com/', 'US');
+      response = await apiService.queryCountry(process.env.GRAPHQL_COUNTRY_ENDPOINT!, 'US');
     });
 
     await test.step('Verify GraphQL response', async () => {
@@ -32,7 +30,7 @@ test(
     let postId!: string;
 
     await test.step('Create post via GraphQL mutation', async () => {
-      postId = await apiService.createTestPost(GRAPHQL_ENDPOINT, title, bodyText);
+      postId = await apiService.createTestPost(process.env.GRAPHQL_POST_ENDPOINT!, title, bodyText);
     });
 
     await test.step('Verify post creation', async () => {
@@ -50,12 +48,12 @@ test(
     let postId!: string;
 
     await test.step('Create post for update test', async () => {
-      postId = await apiService.createTestPost(GRAPHQL_ENDPOINT, originalTitle, originalBody);
+      postId = await apiService.createTestPost(process.env.GRAPHQL_POST_ENDPOINT!, originalTitle, originalBody);
     });
 
     await test.step('Update post via GraphQL mutation', async () => {
       await apiService.updateTestPost(
-        GRAPHQL_ENDPOINT,
+        process.env.GRAPHQL_POST_ENDPOINT!,
         postId,
         'Updated title',
         'Updated body content.',
@@ -77,15 +75,15 @@ test(
     let postId!: string;
 
     await test.step('Create post for deletion test', async () => {
-      postId = await apiService.createTestPost(GRAPHQL_ENDPOINT, title, bodyText);
+      postId = await apiService.createTestPost(process.env.GRAPHQL_POST_ENDPOINT!, title, bodyText);
     });
 
     await test.step('Delete post via GraphQL mutation', async () => {
-      await apiService.deleteTestPost(GRAPHQL_ENDPOINT, postId);
+      await apiService.deleteTestPost(process.env.GRAPHQL_POST_ENDPOINT!, postId);
     });
 
     await test.step('Verify post deletion', async () => {
-      const queryResult = await apiService.queryPost(GRAPHQL_ENDPOINT, postId);
+      const queryResult = await apiService.queryPost(process.env.GRAPHQL_POST_ENDPOINT!, postId);
       expect(queryResult.data?.post).not.toBeNull();
     });
   },

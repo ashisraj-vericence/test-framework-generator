@@ -5,11 +5,9 @@
  * Fill your org's base URL, project key, and API tokens into .env files.
  */
 
-import { getConfig } from '@configs';
 import { IncomingWebhook } from '@slack/webhook';
 import {
   ARTIFACTS_DIR,
-  ENVIRONMENTS_DIR,
   FIRST_SCREENSHOT_PATH,
   logger,
   <% if (reporter === "monocart") { %>
@@ -28,13 +26,10 @@ import {
 import AdmZip from 'adm-zip';
 import { ArgumentParser } from 'argparse';
 import axios from 'axios';
-import dotenv from 'dotenv';
 import { promises as fs } from 'fs';
 import nodemailer from 'nodemailer';
 import path from 'path';
 import { chromium } from 'playwright';
-
-const config = getConfig();
 
 export async function zipTestReport(): Promise<void> {
   const zip = new AdmZip();

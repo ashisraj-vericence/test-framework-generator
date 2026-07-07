@@ -62,20 +62,25 @@ export default defineConfig([
     rules: {
       'playwright/no-focused-test': 'error', // Prevent focused tests
       'playwright/no-skipped-test': 'warn', // Warn about skipped tests
+
+      <% if (preset === 'web' || preset === 'hybrid' ) { %>
       'playwright/no-wait-for-timeout': 'error', // Disallow `page.waitForTimeout`
       'playwright/no-force-option': 'error', // Disallow `force: true` in actions
-      'playwright/expect-expect': 'error', // Ensure `expect` is used in tests
-      'playwright/no-conditional-in-test': 'warn', // Warn about conditionals in tests
       'playwright/no-page-pause': 'error',
       'playwright/no-wait-for-selector': 'error',
-      'playwright/no-duplicate-hooks': 'error',
-      'playwright/no-useless-await': 'error',
-      'playwright/no-useless-not': 'error',
       'playwright/no-get-by-title': 'error',
-      'playwright/no-nested-step': 'error',
       'playwright/no-networkidle': 'error',
       'playwright/no-nth-methods': 'error',
       'playwright/no-raw-locators': ['warn', { allowed: ['iframe', "[aria-busy='false']"] }],
+      'playwright/prefer-locator': 'error',
+      'playwright/prefer-native-locators': 'error',
+      <% } %>
+      'playwright/expect-expect': 'error', // Ensure `expect` is used in tests
+      'playwright/no-conditional-in-test': 'warn', // Warn about conditionals in tests
+      'playwright/no-duplicate-hooks': 'error',
+      'playwright/no-useless-await': 'error',
+      'playwright/no-useless-not': 'error',
+      'playwright/no-nested-step': 'error',
       'playwright/missing-playwright-await': ['error'],
       'playwright/valid-expect': 'error',
       'playwright/valid-title': 'error',
@@ -86,9 +91,7 @@ export default defineConfig([
       'playwright/prefer-to-have-length': 'error',
       'playwright/prefer-hooks-in-order': 'error',
       'playwright/prefer-hooks-on-top': 'error',
-      'playwright/prefer-locator': 'error',
       'playwright/prefer-lowercase-title': 'error',
-      'playwright/prefer-native-locators': 'error',
       'playwright/max-expects': ['error', { max: 5 }],
     },
   },

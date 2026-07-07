@@ -41,7 +41,11 @@ export class ApiClient {
         : apiOptions.apiBaseURL,
       extraHTTPHeaders: apiOptions.extraHTTPHeaders,
       clientCertificates: apiOptions.clientCertificates,
-      ignoreHTTPSErrors: false,
+      ignoreHTTPSErrors: process.env.IGNORE_HTTPS_ERROR
+        ? true
+        : process.env.IGNORE_HTTPS_ERROR === 'true'
+          ? true
+          : false,
     }) as Promise<APIRequestContext>;
     this.apiOptions = apiOptions;
     this.testInfo = testInfo;

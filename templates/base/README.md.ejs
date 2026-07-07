@@ -25,6 +25,7 @@ This framework is designed to accelerate the development and execution of UI tes
 
 ## Tech Stack
 
+- Nodejs
 - Typescript
 - Playwright
 - Allure Report
@@ -43,14 +44,16 @@ This framework is designed to accelerate the development and execution of UI tes
 
 ```bash
 npm i
+<% if (preset === 'web' || preset === 'hybrid' ) { %>
 npx playwright install --with-deps
+<% } %>
 ```
 
 ## Running Tests
 
 ```bash
 # Run all tests in headless mode
-`npm test` – run Playwright tests
+`npm run test:dev` – run Playwright tests
 
 # Run all tests in headed mode
 `npm run test:headed`

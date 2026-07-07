@@ -1,10 +1,8 @@
-import { ARTIFACTS_DIR, logger } from '@utils';
+import { <% if (['web', 'hybrid'].includes(preset)) { %>ARTIFACTS_DIR,<% } -%> logger } from '@utils';
+<% if (preset === 'web' || preset === 'hybrid' ) { %>
 import { resolve } from 'path';
 import { rimraf } from 'rimraf';
-
-
-const cookiesFileName = `${process.env.USER_NAME}_cookies.json`;
-const storageStateFilePath = resolve(ARTIFACTS_DIR, `cookies/${cookiesFileName}`);
+<% } %>
 
 /**
  * Global Teardown – runs once after all tests.
@@ -16,9 +14,13 @@ export default async function globalTeardown() {
   // Example: delete temp files, close DB connections, etc.
   // If you send summary reports, you can trigger them here
 
+  <% if (preset === 'web' || preset === 'hybrid' ) { %>
   // Cleanup old artifacts using glob pattern
+  const cookiesFileName = `${process.env.USER_NAME}_cookies.json`;
+  const storageStateFilePath = resolve(ARTIFACTS_DIR, `cookies/${cookiesFileName}`);
   await rimraf(storageStateFilePath);
   logger.info(`🧹 Deleted files matching: ${storageStateFilePath}`);
+  <% } %>
 
   logger.info('🏁 Global Teardown complete.');
 }

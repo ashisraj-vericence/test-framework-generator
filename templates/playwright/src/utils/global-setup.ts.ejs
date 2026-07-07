@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-<% if (['web', 'hybrid', 'api'].includes(preset)) { %>
+<% if (reporter === 'allure' || ['web', 'hybrid'].includes(preset)) { %>
 import fs from 'fs';
 <% } %>
 import path from 'path';
@@ -34,7 +34,7 @@ export default async function globalSetup(config: FullConfig) {
     // Wait for web server to be ready before running API tests
     await waitOn({
       resources: [`${process.env.API_BASE_URL}/health`],
-      timeout: 30000, // 30 seconds
+      timeout: 5000, // 5 seconds
     }).catch((error) => {
       logger.warn('Error waiting for the web server to be ready');
     });

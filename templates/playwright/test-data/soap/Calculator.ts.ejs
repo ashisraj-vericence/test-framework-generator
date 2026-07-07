@@ -1,6 +1,6 @@
 export const calculatorSoapData = {
   add: {
-    url: 'http://www.dneonline.com/calculator.asmx',
+    url: process.env.CALC_SOAP_WSDL_URL!,
     headers: {
       'Content-Type': 'text/xml; charset=utf-8',
     },
@@ -19,7 +19,7 @@ export const calculatorSoapData = {
     responsePath: 'Envelope.Body.AddResponse.AddResult',
   },
   subtract: {
-    url: 'http://www.dneonline.com/calculator.asmx',
+    url: process.env.CALC_SOAP_WSDL_URL!,
     headers: {
       'Content-Type': 'text/xml; charset=utf-8',
     },
@@ -38,7 +38,7 @@ export const calculatorSoapData = {
     responsePath: 'Envelope.Body.SubtractResponse.SubtractResult',
   },
   multiply: {
-    url: 'http://www.dneonline.com/calculator.asmx',
+    url: process.env.CALC_SOAP_WSDL_URL!,
     headers: {
       'Content-Type': 'text/xml; charset=utf-8',
     },
@@ -57,7 +57,7 @@ export const calculatorSoapData = {
     responsePath: 'Envelope.Body.MultiplyResponse.MultiplyResult',
   },
   divide: {
-    url: 'http://www.dneonline.com/calculator.asmx',
+    url: process.env.CALC_SOAP_WSDL_URL!,
     headers: {
       'Content-Type': 'text/xml; charset=utf-8',
     },
